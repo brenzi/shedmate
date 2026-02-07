@@ -63,7 +63,7 @@ final noteGeneratorProvider =
 class NoteGeneratorNotifier extends Notifier<NoteGeneratorState> {
   late final AudioService _audioService;
   late final SequencerService _sequencer;
-  bool _initialized = false;
+  Future<void>? _initFuture;
 
   @override
   NoteGeneratorState build() {
@@ -72,15 +72,11 @@ class NoteGeneratorNotifier extends Notifier<NoteGeneratorState> {
     _sequencer.onNewNote = _onNewNote;
     _sequencer.onBeat = _onBeat;
     ref.onDispose(_dispose);
+    _ensureInit(); // eager: audio driver warms up while user sees UI
     return const NoteGeneratorState();
   }
 
-  Future<void> _ensureInit() async {
-    if (!_initialized) {
-      await _audioService.init();
-      _initialized = true;
-    }
-  }
+  Future<void> _ensureInit() => _initFuture ??= _audioService.init();
 
   void _onNewNote(int midiNote) {
     state = state.copyWith(currentNoteName: midiNoteToName(midiNote));
@@ -150,6 +146,6 @@ class NoteGeneratorNotifier extends Notifier<NoteGeneratorState> {
 
   Future<void> _dispose() async {
     if (_sequencer.isPlaying) await _sequencer.stop();
-    if (_initialized) await _audioService.dispose();
+    if (_initFuture != null) await _audioService.dispose();
   }
 }
