@@ -26,8 +26,8 @@ jobs:
           ref: ab/expose-realtime-note-injection
           path: flutter_midi_pro_sequencer
 
-      - name: Link fork to expected path
-        run: ln -s "$GITHUB_WORKSPACE/flutter_midi_pro_sequencer" "$GITHUB_WORKSPACE/../flutter_midi_pro_sequencer"
+      - name: Move fork to expected path
+        run: mv "$GITHUB_WORKSPACE/flutter_midi_pro_sequencer" "$GITHUB_WORKSPACE/../flutter_midi_pro_sequencer"
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
