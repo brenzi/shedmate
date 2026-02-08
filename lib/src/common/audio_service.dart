@@ -6,9 +6,11 @@ class AudioService {
   final MidiPro _midi;
   late int _sfId;
   late int _clickFluidSfId;
+  late int _drumsFluidSfId;
 
   static const _pianoChannel = 0;
   static const _clickChannel = 1;
+  static const _drumsChannel = 2;
   static const _clickDurationMs = 50;
 
   Future<void> init() async {
@@ -26,6 +28,19 @@ class AudioService {
       channel: _clickChannel,
       fluidSfontId: _clickFluidSfId,
       bank: 0,
+      program: 0,
+    );
+
+    _drumsFluidSfId = await _midi.loadSoundfontAssetIntoSynth(
+      existingSfId: _sfId,
+      assetPath: 'assets/sf2/drums.sf2',
+    );
+
+    await _midi.selectInstrumentBySfontId(
+      sfId: _sfId,
+      channel: _drumsChannel,
+      fluidSfontId: _drumsFluidSfId,
+      bank: 128,
       program: 0,
     );
 
@@ -66,6 +81,26 @@ class AudioService {
       sfId: _sfId,
       tick: tick + _clickDurationMs,
       channel: _clickChannel,
+      key: key,
+    );
+  }
+
+  Future<void> scheduleDrumHit(
+    int tick, {
+    int key = 49,
+    int velocity = 100,
+  }) async {
+    await _midi.scheduleNoteOn(
+      sfId: _sfId,
+      tick: tick,
+      channel: _drumsChannel,
+      key: key,
+      velocity: velocity,
+    );
+    await _midi.scheduleNoteOff(
+      sfId: _sfId,
+      tick: tick + _clickDurationMs,
+      channel: _drumsChannel,
       key: key,
     );
   }

@@ -35,13 +35,16 @@ class BeatPatternEditor extends ConsumerWidget {
             final active = offbeatToggles[i];
             return GestureDetector(
               onTap: () => notifier.toggleOffbeat(i),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: CircleAvatar(
-                  radius: 10,
-                  backgroundColor: active
-                      ? colorScheme.tertiary
-                      : colorScheme.surfaceContainerHighest,
+              child: SizedBox(
+                width: 32,
+                height: 32,
+                child: Center(
+                  child: CircleAvatar(
+                    radius: 10,
+                    backgroundColor: active
+                        ? colorScheme.tertiary
+                        : colorScheme.surfaceContainerHighest,
+                  ),
                 ),
               ),
             );
@@ -56,15 +59,18 @@ class BeatPatternEditor extends ConsumerWidget {
             final isCurrent = isPlaying && i == currentBeat;
             return GestureDetector(
               onTap: () => notifier.toggleBeat(i),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: CircleAvatar(
-                  radius: isCurrent ? 20 : 16,
-                  backgroundColor: isCurrent
-                      ? colorScheme.primary
-                      : active
-                      ? colorScheme.primaryContainer
-                      : colorScheme.surfaceContainerHighest,
+              child: SizedBox(
+                width: 48,
+                height: 48,
+                child: Center(
+                  child: CircleAvatar(
+                    radius: 16,
+                    backgroundColor: isCurrent
+                        ? colorScheme.primary
+                        : active
+                        ? colorScheme.primaryContainer
+                        : colorScheme.surfaceContainerHighest,
+                  ),
                 ),
               ),
             );

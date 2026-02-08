@@ -20,6 +20,7 @@ class MetronomeSequencerService {
   Timer? _timer;
   int _nextBeatIndex = 0;
   int _nextBeatTickMs = 0;
+  final _pendingBeats = <({int tick, int beat, int bar})>[];
 
   static const _timerIntervalMs = 50;
   static const _lookaheadMs = 200;
@@ -32,6 +33,7 @@ class MetronomeSequencerService {
     final currentTick = await audioService.getCurrentTick();
     _nextBeatTickMs = currentTick;
     _nextBeatIndex = 0;
+    _pendingBeats.clear();
     _timer = Timer.periodic(
       const Duration(milliseconds: _timerIntervalMs),
       (_) => _tick(),
@@ -42,12 +44,29 @@ class MetronomeSequencerService {
   Future<void> stop() async {
     _timer?.cancel();
     _timer = null;
+
+    // Flush any pending beat callbacks
+    final currentTick = await audioService.getCurrentTick();
+    while (_pendingBeats.isNotEmpty &&
+        _pendingBeats.first.tick <= currentTick) {
+      final e = _pendingBeats.removeAt(0);
+      onBeat?.call(e.beat, e.bar);
+    }
+    _pendingBeats.clear();
+
     await audioService.stopAllNotes();
   }
 
   Future<void> _tick() async {
     final currentTick = await audioService.getCurrentTick();
     final horizon = currentTick + _lookaheadMs;
+
+    // Fire pending beat callbacks whose tick has arrived
+    while (_pendingBeats.isNotEmpty &&
+        _pendingBeats.first.tick <= currentTick) {
+      final e = _pendingBeats.removeAt(0);
+      onBeat?.call(e.beat, e.bar);
+    }
 
     while (_nextBeatTickMs <= horizon) {
       final beatInBar = _nextBeatIndex % beatsPerBar;
@@ -57,7 +76,7 @@ class MetronomeSequencerService {
 
       if (beatInBar < beatToggles.length && beatToggles[beatInBar]) {
         if (barsPerSection > 0 && beatInBar == 0 && barIndex == 0) {
-          await audioService.scheduleClick(
+          await audioService.scheduleDrumHit(
             _nextBeatTickMs,
             key: ClickSound.section,
           );
@@ -80,10 +99,21 @@ class MetronomeSequencerService {
         );
       }
 
-      onBeat?.call(beatInBar, barIndex);
+      _pendingBeats.add((
+        tick: _nextBeatTickMs,
+        beat: beatInBar,
+        bar: barIndex,
+      ));
 
       _nextBeatIndex++;
       _nextBeatTickMs += _beatIntervalMs.round();
+    }
+
+    // Fire callbacks for beats just scheduled at or before current tick
+    while (_pendingBeats.isNotEmpty &&
+        _pendingBeats.first.tick <= currentTick) {
+      final e = _pendingBeats.removeAt(0);
+      onBeat?.call(e.beat, e.bar);
     }
   }
 }

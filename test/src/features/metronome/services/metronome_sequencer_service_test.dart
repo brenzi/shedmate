@@ -133,7 +133,7 @@ void main() {
   });
 
   group('section markers', () {
-    test('section start uses section key', () async {
+    test('section start uses drum hit with section key', () async {
       sequencer.bpm = 120;
       sequencer.beatsPerBar = 1; // 1 beat per bar
       sequencer.barsPerSection = 4;
@@ -143,8 +143,11 @@ void main() {
       await sequencer.start();
       await sequencer.stop();
 
-      // Beat 0 = bar 0, beat 0 → section marker
-      expect(clickKeys().first, ClickSound.section);
+      // Beat 0 = bar 0, beat 0 → section marker on drums channel
+      expect(mockAudio.scheduledDrumHits, isNotEmpty);
+      expect(mockAudio.scheduledDrumHits.first.key, ClickSound.section);
+      // No click scheduled for beat 0 (section uses drum hit instead)
+      expect(clickKeys(), isNot(contains(ClickSound.section)));
     });
 
     test('section overrides accent', () async {
@@ -157,12 +160,12 @@ void main() {
       await sequencer.start();
       await sequencer.stop();
 
-      // Beat 0 (bar 0, beat 0) = section
-      // Beat 1 (bar 0, beat 1) = regular
-      // Beat 2 (bar 1, beat 0) = accent (not section start)
-      expect(clickKeys()[0], ClickSound.section);
-      expect(clickKeys()[1], ClickSound.regular);
-      expect(clickKeys()[2], ClickSound.accent);
+      // Beat 0 (bar 0, beat 0) = section → drum hit, not click
+      // Beat 1 (bar 0, beat 1) = regular click
+      // Beat 2 (bar 1, beat 0) = accent click (not section start)
+      expect(mockAudio.scheduledDrumHits.first.key, ClickSound.section);
+      expect(clickKeys()[0], ClickSound.regular);
+      expect(clickKeys()[1], ClickSound.accent);
     });
   });
 
@@ -181,6 +184,9 @@ void main() {
       };
 
       await sequencer.start();
+
+      // Advance time past all scheduled beats so stop() flushes them
+      mockAudio.currentTick = 200;
       await sequencer.stop();
 
       // 3 beats in 200ms lookahead at 100ms interval

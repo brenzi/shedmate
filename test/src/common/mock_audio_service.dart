@@ -6,6 +6,7 @@ class MockAudioService extends AudioService {
   int currentTick = 0;
   final scheduledNotes = <({int tick, int midiNote, int durationMs})>[];
   final scheduledClicks = <({int tick, int key, int velocity})>[];
+  final scheduledDrumHits = <({int tick, int key, int velocity})>[];
   bool stopAllCalled = false;
 
   @override
@@ -30,6 +31,15 @@ class MockAudioService extends AudioService {
     int velocity = 100,
   }) async {
     scheduledClicks.add((tick: tick, key: key, velocity: velocity));
+  }
+
+  @override
+  Future<void> scheduleDrumHit(
+    int tick, {
+    int key = 49,
+    int velocity = 100,
+  }) async {
+    scheduledDrumHits.add((tick: tick, key: key, velocity: velocity));
   }
 
   @override

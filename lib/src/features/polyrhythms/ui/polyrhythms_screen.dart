@@ -34,7 +34,7 @@ class PolyrhythmsScreen extends ConsumerWidget {
                     onBpmChanged: notifier.setBpm,
                   ),
                   child: Text(
-                    '\u2669 = $bpm',
+                    'A: \u2669 = $bpm',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),

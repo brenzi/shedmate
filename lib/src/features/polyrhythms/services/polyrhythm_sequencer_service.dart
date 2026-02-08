@@ -21,6 +21,7 @@ class PolyrhythmSequencerService {
   int _nextIndexA = 0;
   int _nextIndexB = 0;
   int _nextIndexSub = 0;
+  final _pendingBeats = <({int tick, int indexA, int indexB})>[];
 
   static const _timerIntervalMs = 50;
   static const _lookaheadMs = 200;
@@ -38,6 +39,7 @@ class PolyrhythmSequencerService {
     _nextIndexA = 0;
     _nextIndexB = 0;
     _nextIndexSub = 0;
+    _pendingBeats.clear();
     _timer = Timer.periodic(
       const Duration(milliseconds: _timerIntervalMs),
       (_) => _tick(),
@@ -48,12 +50,29 @@ class PolyrhythmSequencerService {
   Future<void> stop() async {
     _timer?.cancel();
     _timer = null;
+
+    // Flush any pending beat callbacks
+    final currentTick = await audioService.getCurrentTick();
+    while (_pendingBeats.isNotEmpty &&
+        _pendingBeats.first.tick <= currentTick) {
+      final e = _pendingBeats.removeAt(0);
+      onBeat?.call(e.indexA, e.indexB);
+    }
+    _pendingBeats.clear();
+
     await audioService.stopAllNotes();
   }
 
   Future<void> _tick() async {
     final currentTick = await audioService.getCurrentTick();
     final horizon = currentTick + _lookaheadMs;
+
+    // Fire pending beat callbacks whose tick has arrived
+    while (_pendingBeats.isNotEmpty &&
+        _pendingBeats.first.tick <= currentTick) {
+      final e = _pendingBeats.removeAt(0);
+      onBeat?.call(e.indexA, e.indexB);
+    }
 
     while (true) {
       // Calculate next tick for each stream
@@ -75,7 +94,9 @@ class PolyrhythmSequencerService {
 
       if (earliest == double.infinity || earliest > horizon) {
         // Check if we need to start a new cycle
-        if (_nextIndexA >= a && _nextIndexB >= b) {
+        if (_nextIndexA >= a &&
+            _nextIndexB >= b &&
+            (!showSubdivision || _nextIndexSub >= subCount)) {
           _cycleStartTickMs += _cycleMs.round();
           _nextIndexA = 0;
           _nextIndexB = 0;
@@ -124,7 +145,16 @@ class PolyrhythmSequencerService {
         _nextIndexSub++;
       }
 
-      onBeat?.call(beatA, beatB);
+      if (beatA >= 0 || beatB >= 0) {
+        _pendingBeats.add((tick: tickMs, indexA: beatA, indexB: beatB));
+      }
+    }
+
+    // Fire callbacks for beats just scheduled at or before current tick
+    while (_pendingBeats.isNotEmpty &&
+        _pendingBeats.first.tick <= currentTick) {
+      final e = _pendingBeats.removeAt(0);
+      onBeat?.call(e.indexA, e.indexB);
     }
   }
 }

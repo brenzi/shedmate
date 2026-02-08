@@ -16,6 +16,12 @@ class FakeAudioService extends AudioService {
     int velocity = 100,
   }) async {}
   @override
+  Future<void> scheduleDrumHit(
+    int tick, {
+    int key = 49,
+    int velocity = 100,
+  }) async {}
+  @override
   Future<void> stopAllNotes() async {}
   @override
   Future<void> dispose() async {}
