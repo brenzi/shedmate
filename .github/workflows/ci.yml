@@ -24,7 +24,10 @@ jobs:
         with:
           repository: brenzi/flutter_midi_pro
           ref: ab/expose-realtime-note-injection
-          path: ../flutter_midi_pro_sequencer
+          path: flutter_midi_pro_sequencer
+
+      - name: Link fork to expected path
+        run: ln -s "$GITHUB_WORKSPACE/flutter_midi_pro_sequencer" "$GITHUB_WORKSPACE/../flutter_midi_pro_sequencer"
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
