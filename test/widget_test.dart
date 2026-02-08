@@ -1,20 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:jazz_practice_tools/src/app.dart';
 import 'package:jazz_practice_tools/src/common/providers.dart';
 
 import 'src/common/fake_audio_service.dart';
 
+late SharedPreferences _prefs;
+
 Widget _buildTestApp() {
   return ProviderScope(
-    overrides: [audioServiceProvider.overrideWithValue(FakeAudioService())],
+    overrides: [
+      audioServiceProvider.overrideWithValue(FakeAudioService()),
+      sharedPrefsProvider.overrideWithValue(_prefs),
+    ],
     child: const App(),
   );
 }
 
 void main() {
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    _prefs = await SharedPreferences.getInstance();
+  });
+
   testWidgets('renders Note Generator tab by default', (tester) async {
     await tester.pumpWidget(_buildTestApp());
     expect(find.text('Note Generator'), findsOneWidget);

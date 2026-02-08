@@ -12,6 +12,7 @@ dependencies:
   flutter_riverpod: ^2.6.1
   flutter_midi_pro:
     path: ../flutter_midi_pro_sequencer
+  shared_preferences: ^2.5.4
 
 dev_dependencies:
   flutter_test:

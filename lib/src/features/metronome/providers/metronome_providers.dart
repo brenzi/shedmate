@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../common/audio_service.dart';
 import '../../../common/providers.dart';
@@ -12,15 +15,33 @@ final metronomeProvider = NotifierProvider<MetronomeNotifier, MetronomeState>(
 class MetronomeNotifier extends Notifier<MetronomeState> {
   late final AudioService _audioService;
   late final MetronomeSequencerService _sequencer;
+  late final SharedPreferences _prefs;
   Future<void>? _initFuture;
+
+  static const _key = 'metronome';
 
   @override
   MetronomeState build() {
     _audioService = ref.read(audioServiceProvider);
+    _prefs = ref.read(sharedPrefsProvider);
     _sequencer = MetronomeSequencerService(audioService: _audioService);
     _sequencer.onBeat = _onBeat;
     ref.onDispose(_dispose);
-    return const MetronomeState();
+    return _load();
+  }
+
+  MetronomeState _load() {
+    final raw = _prefs.getString(_key);
+    if (raw == null) return const MetronomeState();
+    try {
+      return MetronomeState.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+    } on Object {
+      return const MetronomeState();
+    }
+  }
+
+  void _save() {
+    _prefs.setString(_key, jsonEncode(state.toJson()));
   }
 
   Future<void> _ensureInit() => _initFuture ??= _audioService.init();
@@ -44,6 +65,7 @@ class MetronomeNotifier extends Notifier<MetronomeState> {
   void setBpm(int value) {
     state = state.copyWith(bpm: value);
     _sequencer.bpm = value;
+    _save();
   }
 
   void setBeatsPerBar(int value) {
@@ -58,6 +80,7 @@ class MetronomeNotifier extends Notifier<MetronomeState> {
       ..beatsPerBar = value
       ..beatToggles = beats
       ..offbeatToggles = offbeats;
+    _save();
   }
 
   void toggleBeat(int index) {
@@ -65,6 +88,7 @@ class MetronomeNotifier extends Notifier<MetronomeState> {
     toggles[index] = !toggles[index];
     state = state.copyWith(beatToggles: toggles);
     _sequencer.beatToggles = toggles;
+    _save();
   }
 
   void toggleOffbeat(int index) {
@@ -72,17 +96,20 @@ class MetronomeNotifier extends Notifier<MetronomeState> {
     toggles[index] = !toggles[index];
     state = state.copyWith(offbeatToggles: toggles);
     _sequencer.offbeatToggles = toggles;
+    _save();
   }
 
   void toggleAccent() {
     final value = !state.accentBeat1;
     state = state.copyWith(accentBeat1: value);
     _sequencer.accentBeat1 = value;
+    _save();
   }
 
   void setBarsPerSection(int value) {
     state = state.copyWith(barsPerSection: value);
     _sequencer.barsPerSection = value;
+    _save();
   }
 
   void _syncParams() {

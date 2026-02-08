@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../common/audio_service.dart';
 import '../../../common/providers.dart';
@@ -13,15 +16,33 @@ final polyrhythmProvider =
 class PolyrhythmNotifier extends Notifier<PolyrhythmState> {
   late final AudioService _audioService;
   late final PolyrhythmSequencerService _sequencer;
+  late final SharedPreferences _prefs;
   Future<void>? _initFuture;
+
+  static const _key = 'polyrhythm';
 
   @override
   PolyrhythmState build() {
     _audioService = ref.read(audioServiceProvider);
+    _prefs = ref.read(sharedPrefsProvider);
     _sequencer = PolyrhythmSequencerService(audioService: _audioService);
     _sequencer.onBeat = _onBeat;
     ref.onDispose(_dispose);
-    return const PolyrhythmState();
+    return _load();
+  }
+
+  PolyrhythmState _load() {
+    final raw = _prefs.getString(_key);
+    if (raw == null) return const PolyrhythmState();
+    try {
+      return PolyrhythmState.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+    } on Object {
+      return const PolyrhythmState();
+    }
+  }
+
+  void _save() {
+    _prefs.setString(_key, jsonEncode(state.toJson()));
   }
 
   Future<void> _ensureInit() => _initFuture ??= _audioService.init();
@@ -52,22 +73,26 @@ class PolyrhythmNotifier extends Notifier<PolyrhythmState> {
   void setA(int value) {
     state = state.copyWith(a: value);
     _sequencer.a = value;
+    _save();
   }
 
   void setB(int value) {
     state = state.copyWith(b: value);
     _sequencer.b = value;
+    _save();
   }
 
   void setBpm(int value) {
     state = state.copyWith(bpm: value);
     _sequencer.bpm = value;
+    _save();
   }
 
   void toggleSubdivision() {
     final value = !state.showSubdivision;
     state = state.copyWith(showSubdivision: value);
     _sequencer.showSubdivision = value;
+    _save();
   }
 
   void _syncParams() {

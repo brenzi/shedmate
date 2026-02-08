@@ -21,6 +21,32 @@ class MetronomeState {
   final int currentBeat;
   final int currentBar;
 
+  Map<String, dynamic> toJson() => {
+    'bpm': bpm,
+    'beatsPerBar': beatsPerBar,
+    'beatToggles': beatToggles,
+    'offbeatToggles': offbeatToggles,
+    'accentBeat1': accentBeat1,
+    'barsPerSection': barsPerSection,
+  };
+
+  factory MetronomeState.fromJson(Map<String, dynamic> j) {
+    const d = MetronomeState();
+    final beatsPerBar = j['beatsPerBar'] as int? ?? d.beatsPerBar;
+    return MetronomeState(
+      bpm: j['bpm'] as int? ?? d.bpm,
+      beatsPerBar: beatsPerBar,
+      beatToggles:
+          (j['beatToggles'] as List<dynamic>?)?.cast<bool>() ??
+          List.filled(beatsPerBar, true),
+      offbeatToggles:
+          (j['offbeatToggles'] as List<dynamic>?)?.cast<bool>() ??
+          List.filled(beatsPerBar, false),
+      accentBeat1: j['accentBeat1'] as bool? ?? d.accentBeat1,
+      barsPerSection: j['barsPerSection'] as int? ?? d.barsPerSection,
+    );
+  }
+
   MetronomeState copyWith({
     int? bpm,
     int? beatsPerBar,

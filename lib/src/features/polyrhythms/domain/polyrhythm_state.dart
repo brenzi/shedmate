@@ -17,6 +17,23 @@ class PolyrhythmState {
   final int currentTickA; // -1 = none active
   final int currentTickB;
 
+  Map<String, dynamic> toJson() => {
+    'a': a,
+    'b': b,
+    'bpm': bpm,
+    'showSubdivision': showSubdivision,
+  };
+
+  factory PolyrhythmState.fromJson(Map<String, dynamic> j) {
+    const d = PolyrhythmState();
+    return PolyrhythmState(
+      a: j['a'] as int? ?? d.a,
+      b: j['b'] as int? ?? d.b,
+      bpm: j['bpm'] as int? ?? d.bpm,
+      showSubdivision: j['showSubdivision'] as bool? ?? d.showSubdivision,
+    );
+  }
+
   PolyrhythmState copyWith({
     int? a,
     int? b,
