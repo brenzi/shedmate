@@ -9,96 +9,44 @@ class BeatPatternEditor extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final beats = ref.watch(metronomeProvider.select((s) => s.beatsPerBar));
-    final beatToggles = ref.watch(
-      metronomeProvider.select((s) => s.beatToggles),
-    );
-    final offbeatToggles = ref.watch(
-      metronomeProvider.select((s) => s.offbeatToggles),
-    );
-    final currentBeat = ref.watch(
-      metronomeProvider.select((s) => s.currentBeat),
-    );
-    final currentBar = ref.watch(metronomeProvider.select((s) => s.currentBar));
-    final isPlaying = ref.watch(metronomeProvider.select((s) => s.isPlaying));
     final barsPerSection = ref.watch(
       metronomeProvider.select((s) => s.barsPerSection),
     );
-    final notifier = ref.read(metronomeProvider.notifier);
-    final colorScheme = Theme.of(context).colorScheme;
+    final currentBar = ref.watch(metronomeProvider.select((s) => s.currentBar));
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.maxWidth;
-          const beatRadius = 16.0;
-          const offbeatRadius = 10.0;
 
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Offbeat row
+              // Offbeat row — each centered between adjacent beats
               SizedBox(
-                height: 32,
+                height: 44,
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: List.generate(beats, (i) {
-                    final x = (i + 0.5) / beats * width;
-                    final active = offbeatToggles[i];
+                    final center = (i + 1) / beats * width;
                     return Positioned(
-                      left: x - 16,
+                      left: center - 22,
                       top: 0,
-                      child: GestureDetector(
-                        onTap: () => notifier.toggleOffbeat(i),
-                        child: SizedBox(
-                          width: 32,
-                          height: 32,
-                          child: Center(
-                            child: CircleAvatar(
-                              radius: offbeatRadius,
-                              backgroundColor: active
-                                  ? colorScheme.tertiary
-                                  : colorScheme.surfaceContainerHighest,
-                            ),
-                          ),
-                        ),
-                      ),
+                      child: _OffbeatDot(index: i),
                     );
                   }),
                 ),
               ),
-              const SizedBox(height: 12),
-              // Beat row
+              const SizedBox(height: 8),
+              // Beat row — Row+Expanded ensures full-width hit areas
               SizedBox(
-                height: 48,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: List.generate(beats, (i) {
-                    final x = i / beats * width;
-                    final active = beatToggles[i];
-                    final isCurrent = isPlaying && i == currentBeat;
-                    return Positioned(
-                      left: x - 24,
-                      top: 0,
-                      child: GestureDetector(
-                        onTap: () => notifier.toggleBeat(i),
-                        child: SizedBox(
-                          width: 48,
-                          height: 48,
-                          child: Center(
-                            child: CircleAvatar(
-                              radius: beatRadius,
-                              backgroundColor: isCurrent
-                                  ? colorScheme.primary
-                                  : active
-                                  ? colorScheme.primaryContainer
-                                  : colorScheme.surfaceContainerHighest,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
+                height: 56,
+                child: Row(
+                  children: List.generate(
+                    beats,
+                    (i) => Expanded(child: _BeatDot(index: i)),
+                  ),
                 ),
               ),
               if (barsPerSection > 0) ...[
@@ -111,6 +59,71 @@ class BeatPatternEditor extends ConsumerWidget {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _BeatDot extends ConsumerWidget {
+  const _BeatDot({required this.index});
+
+  final int index;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final active = ref.watch(
+      metronomeProvider.select((s) => s.beatToggles[index]),
+    );
+    final isCurrent = ref.watch(
+      metronomeProvider.select((s) => s.isPlaying && s.currentBeat == index),
+    );
+    final notifier = ref.read(metronomeProvider.notifier);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => notifier.toggleBeat(index),
+      child: Center(
+        child: CircleAvatar(
+          radius: 16,
+          backgroundColor: isCurrent
+              ? colorScheme.primary
+              : active
+              ? colorScheme.primaryContainer
+              : colorScheme.surfaceContainerHighest,
+        ),
+      ),
+    );
+  }
+}
+
+class _OffbeatDot extends ConsumerWidget {
+  const _OffbeatDot({required this.index});
+
+  final int index;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final active = ref.watch(
+      metronomeProvider.select((s) => s.offbeatToggles[index]),
+    );
+    final notifier = ref.read(metronomeProvider.notifier);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => notifier.toggleOffbeat(index),
+      child: SizedBox(
+        width: 44,
+        height: 44,
+        child: Center(
+          child: CircleAvatar(
+            radius: 10,
+            backgroundColor: active
+                ? colorScheme.tertiary
+                : colorScheme.surfaceContainerHighest,
+          ),
+        ),
       ),
     );
   }
