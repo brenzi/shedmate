@@ -1,9 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../common/audio_service.dart';
 import '../../../common/midi_utils.dart';
+import '../../../common/providers.dart';
 import '../domain/note_range.dart';
 import '../domain/scale.dart';
-import '../services/audio_service.dart';
 import '../services/sequencer_service.dart';
 
 const _sentinel = Object();
@@ -75,8 +76,6 @@ class NoteGeneratorState {
     );
   }
 }
-
-final audioServiceProvider = Provider<AudioService>((ref) => AudioService());
 
 final noteGeneratorProvider =
     NotifierProvider<NoteGeneratorNotifier, NoteGeneratorState>(

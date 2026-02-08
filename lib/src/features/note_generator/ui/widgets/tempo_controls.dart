@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../common/widgets/tempo_wheel_overlay.dart';
 import '../../providers/note_generator_providers.dart';
 
 class TempoControls extends ConsumerWidget {
@@ -20,24 +21,18 @@ class TempoControls extends ConsumerWidget {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              Text(
-                'Tempo $bpm',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ],
+          child: GestureDetector(
+            onTap: () => showTempoWheel(
+              context,
+              currentBpm: bpm,
+              onBpmChanged: ref.read(noteGeneratorProvider.notifier).setBpm,
+              max: 200,
+            ),
+            child: Text(
+              '\u2669 = $bpm',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
           ),
-        ),
-        Slider(
-          value: bpm.toDouble(),
-          min: 40,
-          max: 200,
-          divisions: 160,
-          label: '$bpm',
-          onChanged: (v) {
-            ref.read(noteGeneratorProvider.notifier).setBpm(v.round());
-          },
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),

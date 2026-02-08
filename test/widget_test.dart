@@ -2,43 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jazz_practice_tools/src/features/note_generator/providers/note_generator_providers.dart';
-import 'package:jazz_practice_tools/src/features/note_generator/services/audio_service.dart';
-import 'package:jazz_practice_tools/src/features/note_generator/ui/note_generator_screen.dart';
+import 'package:jazz_practice_tools/src/app.dart';
+import 'package:jazz_practice_tools/src/common/providers.dart';
 
-class FakeAudioService extends AudioService {
-  FakeAudioService() : super(midiPro: null);
-
-  @override
-  Future<void> init() async {}
-  @override
-  Future<int> getCurrentTick() async => 0;
-  @override
-  Future<void> scheduleNote(int tick, int midiNote, int durationMs) async {}
-  @override
-  Future<void> scheduleClick(int tick) async {}
-  @override
-  Future<void> stopAllNotes() async {}
-  @override
-  Future<void> dispose() async {}
-}
+import 'src/common/fake_audio_service.dart';
 
 Widget _buildTestApp() {
   return ProviderScope(
     overrides: [audioServiceProvider.overrideWithValue(FakeAudioService())],
-    child: MaterialApp(
-      theme: ThemeData(
-        colorSchemeSeed: Colors.indigo,
-        brightness: Brightness.dark,
-        useMaterial3: true,
-      ),
-      home: const NoteGeneratorScreen(),
-    ),
+    child: const App(),
   );
 }
 
 void main() {
-  testWidgets('renders without crash', (tester) async {
+  testWidgets('renders Note Generator tab by default', (tester) async {
     await tester.pumpWidget(_buildTestApp());
     expect(find.text('Note Generator'), findsOneWidget);
   });
@@ -70,7 +47,7 @@ void main() {
 
   testWidgets('shows tempo section', (tester) async {
     await tester.pumpWidget(_buildTestApp());
-    expect(find.text('Tempo 80'), findsOneWidget);
+    expect(find.textContaining('= 80'), findsOneWidget);
     expect(find.text('Beats'), findsOneWidget);
   });
 
@@ -83,13 +60,42 @@ void main() {
 
   testWidgets('tap Play toggles to Stop and back', (tester) async {
     await tester.pumpWidget(_buildTestApp());
-    await tester.tap(find.text('Play'));
+    // Debug: check what we find
+    final playFinder = find.text('Play');
+    expect(playFinder, findsOneWidget);
+    // Scroll to make it visible if needed
+    await tester.scrollUntilVisible(playFinder, 100);
+    await tester.tap(playFinder);
+    await tester.pump();
     await tester.pump();
     expect(find.text('Stop'), findsOneWidget);
     expect(find.byIcon(Icons.stop), findsOneWidget);
-    // Stop to clean up timer
     await tester.tap(find.text('Stop'));
     await tester.pump();
+    await tester.pump();
     expect(find.text('Play'), findsOneWidget);
+  });
+
+  testWidgets('bottom nav shows three tabs', (tester) async {
+    await tester.pumpWidget(_buildTestApp());
+    expect(find.text('Notes'), findsOneWidget);
+    expect(find.text('Metronome'), findsOneWidget);
+    expect(find.text('Polyrhythms'), findsOneWidget);
+  });
+
+  testWidgets('can navigate to Metronome tab', (tester) async {
+    await tester.pumpWidget(_buildTestApp());
+    await tester.tap(find.text('Metronome'));
+    await tester.pumpAndSettle();
+    // Tab label + AppBar = 2
+    expect(find.text('Metronome'), findsNWidgets(2));
+  });
+
+  testWidgets('can navigate to Polyrhythms tab', (tester) async {
+    await tester.pumpWidget(_buildTestApp());
+    await tester.tap(find.text('Polyrhythms'));
+    await tester.pumpAndSettle();
+    // Tab label + AppBar = 2
+    expect(find.text('Polyrhythms'), findsNWidgets(2));
   });
 }

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import '../domain/scale.dart';
-import 'audio_service.dart';
+import '../../../common/audio_service.dart';
 
 class SequencerService {
   SequencerService({required this.audioService});

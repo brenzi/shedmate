@@ -1,44 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jazz_practice_tools/src/features/note_generator/domain/scale.dart';
-import 'package:jazz_practice_tools/src/features/note_generator/services/audio_service.dart';
 import 'package:jazz_practice_tools/src/features/note_generator/services/sequencer_service.dart';
 
-class MockAudioService extends AudioService {
-  MockAudioService() : super(midiPro: null);
-
-  int currentTick = 0;
-  final scheduledNotes = <({int tick, int midiNote, int durationMs})>[];
-  final scheduledClicks = <int>[];
-  bool stopAllCalled = false;
-
-  @override
-  Future<void> init() async {}
-
-  @override
-  Future<int> getCurrentTick() async => currentTick;
-
-  @override
-  Future<void> scheduleNote(int tick, int midiNote, int durationMs) async {
-    scheduledNotes.add((
-      tick: tick,
-      midiNote: midiNote,
-      durationMs: durationMs,
-    ));
-  }
-
-  @override
-  Future<void> scheduleClick(int tick) async {
-    scheduledClicks.add(tick);
-  }
-
-  @override
-  Future<void> stopAllNotes() async {
-    stopAllCalled = true;
-  }
-
-  @override
-  Future<void> dispose() async {}
-}
+import '../../../common/mock_audio_service.dart';
 
 void main() {
   late MockAudioService mockAudio;
@@ -49,6 +13,9 @@ void main() {
     sequencer = SequencerService(audioService: mockAudio);
   });
 
+  List<int> clickTicks() =>
+      mockAudio.scheduledClicks.map((c) => c.tick).toList();
+
   group('scheduling logic', () {
     test('start triggers immediate scheduling', () async {
       sequencer.bpm = 120;
@@ -58,7 +25,6 @@ void main() {
       await sequencer.start();
       await sequencer.stop();
 
-      // First tick should schedule beats within lookahead window
       expect(mockAudio.scheduledClicks, isNotEmpty);
       expect(mockAudio.scheduledNotes, isNotEmpty);
     });
@@ -73,7 +39,7 @@ void main() {
 
       // At 120 BPM, beat interval is 500ms. Lookahead is 200ms.
       // So only beat at tick 0 should be scheduled (next at 500 > 200).
-      expect(mockAudio.scheduledClicks, equals([0]));
+      expect(clickTicks(), equals([0]));
       expect(mockAudio.scheduledNotes.length, 1);
       expect(mockAudio.scheduledNotes.first.tick, 0);
     });
@@ -88,7 +54,7 @@ void main() {
 
       // At 600 BPM, beat interval is 100ms. Lookahead is 200ms.
       // Beats at 0, 100, 200 should be scheduled.
-      expect(mockAudio.scheduledClicks, equals([0, 100, 200]));
+      expect(clickTicks(), equals([0, 100, 200]));
       // Piano note only on beat 0 (beatInMeasure == 0)
       expect(mockAudio.scheduledNotes.length, 1);
     });
