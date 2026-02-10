@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../common/audio_service.dart';
 import '../../../common/midi_utils.dart';
 import '../../../common/providers.dart';
+import '../../../common/wake_lock_service.dart';
 import '../domain/note_range.dart';
 import '../domain/scale.dart';
 import '../services/sequencer_service.dart';
@@ -165,6 +166,7 @@ class NoteGeneratorNotifier extends Notifier<NoteGeneratorState> {
   Future<void> togglePlay() async {
     if (state.isPlaying) {
       await _sequencer.stop();
+      await WakeLockService.instance.disable();
       state = state.copyWith(
         isPlaying: false,
         currentNoteName: '---',
@@ -174,6 +176,7 @@ class NoteGeneratorNotifier extends Notifier<NoteGeneratorState> {
       await _ensureInit();
       _syncSequencerParams();
       await _sequencer.start();
+      await WakeLockService.instance.enable();
       state = state.copyWith(isPlaying: true);
     }
   }
@@ -247,7 +250,10 @@ class NoteGeneratorNotifier extends Notifier<NoteGeneratorState> {
   }
 
   Future<void> _dispose() async {
-    if (_sequencer.isPlaying) await _sequencer.stop();
+    if (_sequencer.isPlaying) {
+      await _sequencer.stop();
+      await WakeLockService.instance.disable();
+    }
     if (_initFuture != null) await _audioService.dispose();
   }
 }
