@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../common/audio_service.dart';
+import '../../../common/mixer/mixer_providers.dart';
+import '../../../common/mixer/mixer_state.dart';
 import '../../../common/providers.dart';
 import '../../../common/wake_lock_service.dart';
 import '../domain/metronome_state.dart';
@@ -27,6 +29,7 @@ class MetronomeNotifier extends Notifier<MetronomeState> {
     _prefs = ref.read(sharedPrefsProvider);
     _sequencer = MetronomeSequencerService(audioService: _audioService);
     _sequencer.onBeat = _onBeat;
+    ref.listen(mixerProvider, (_, mixer) => _syncMixerParams(mixer));
     ref.onDispose(_dispose);
     return _load();
   }
@@ -116,6 +119,7 @@ class MetronomeNotifier extends Notifier<MetronomeState> {
   }
 
   void _syncParams() {
+    final mixer = ref.read(mixerProvider);
     _sequencer
       ..bpm = state.bpm
       ..beatsPerBar = state.beatsPerBar
@@ -123,6 +127,20 @@ class MetronomeNotifier extends Notifier<MetronomeState> {
       ..offbeatToggles = List<bool>.from(state.offbeatToggles)
       ..accentBeat1 = state.accentBeat1
       ..barsPerSection = state.barsPerSection;
+    _syncMixerParams(mixer);
+  }
+
+  void _syncMixerParams(MixerState mixer) {
+    _sequencer
+      ..beatChannel = mixer.metronomeBeat.channel
+      ..beatKey = mixer.metronomeBeat.key
+      ..beatVelocity = mixer.metronomeBeat.velocity
+      ..barChannel = mixer.metronomeBar.channel
+      ..barKey = mixer.metronomeBar.key
+      ..barVelocity = mixer.metronomeBar.velocity
+      ..sectionChannel = mixer.metronomeSection.channel
+      ..sectionKey = mixer.metronomeSection.key
+      ..sectionVelocity = mixer.metronomeSection.velocity;
   }
 
   Future<void> _dispose() async {

@@ -15,12 +15,34 @@ class MockAudioService extends AudioService {
   @override
   Future<int> getCurrentTick() async => currentTick;
 
+  final scheduledSounds = <({int tick, int channel, int key, int velocity})>[];
+
   @override
-  Future<void> scheduleNote(int tick, int midiNote, int durationMs) async {
+  Future<void> scheduleNote(
+    int tick,
+    int midiNote,
+    int durationMs, {
+    int velocity = 100,
+  }) async {
     scheduledNotes.add((
       tick: tick,
       midiNote: midiNote,
       durationMs: durationMs,
+    ));
+  }
+
+  @override
+  Future<void> scheduleSound(
+    int tick, {
+    required int channel,
+    required int key,
+    required int velocity,
+  }) async {
+    scheduledSounds.add((
+      tick: tick,
+      channel: channel,
+      key: key,
+      velocity: velocity,
     ));
   }
 

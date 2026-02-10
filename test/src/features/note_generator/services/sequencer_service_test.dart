@@ -14,7 +14,7 @@ void main() {
   });
 
   List<int> clickTicks() =>
-      mockAudio.scheduledClicks.map((c) => c.tick).toList();
+      mockAudio.scheduledSounds.map((c) => c.tick).toList();
 
   group('scheduling logic', () {
     test('start triggers immediate scheduling', () async {
@@ -25,7 +25,7 @@ void main() {
       await sequencer.start();
       await sequencer.stop();
 
-      expect(mockAudio.scheduledClicks, isNotEmpty);
+      expect(mockAudio.scheduledSounds, isNotEmpty);
       expect(mockAudio.scheduledNotes, isNotEmpty);
     });
 
@@ -96,7 +96,7 @@ void main() {
       await sequencer.start();
       await sequencer.stop();
 
-      expect(mockAudio.scheduledClicks, isEmpty);
+      expect(mockAudio.scheduledSounds, isEmpty);
     });
 
     test('stop calls stopAllNotes', () async {

@@ -15,6 +15,21 @@ class MetronomeSequencerService {
   bool accentBeat1 = true;
   int barsPerSection = 0;
 
+  // Mixer: beat sound
+  int beatChannel = 1;
+  int beatKey = ClickSound.regular;
+  int beatVelocity = 100;
+
+  // Mixer: bar accent sound
+  int barChannel = 1;
+  int barKey = ClickSound.accent;
+  int barVelocity = 100;
+
+  // Mixer: section sound
+  int sectionChannel = 2;
+  int sectionKey = ClickSound.section;
+  int sectionVelocity = 100;
+
   void Function(int beat, int bar)? onBeat;
 
   Timer? _timer;
@@ -78,27 +93,39 @@ class MetronomeSequencerService {
           barsPerSection > 0 && beatInBar == 0 && barIndex == 0;
 
       if (isSectionStart) {
-        await audioService.scheduleDrumHit(
+        await audioService.scheduleSound(
           _nextBeatTickMs,
-          key: ClickSound.section,
+          channel: sectionChannel,
+          key: sectionKey,
+          velocity: sectionVelocity,
         );
       } else if (beatInBar < beatToggles.length && beatToggles[beatInBar]) {
         if (accentBeat1 && beatInBar == 0) {
-          await audioService.scheduleClick(
+          await audioService.scheduleSound(
             _nextBeatTickMs,
-            key: ClickSound.accent,
+            channel: barChannel,
+            key: barKey,
+            velocity: barVelocity,
           );
         } else {
-          await audioService.scheduleClick(_nextBeatTickMs);
+          await audioService.scheduleSound(
+            _nextBeatTickMs,
+            channel: beatChannel,
+            key: beatKey,
+            velocity: beatVelocity,
+          );
         }
       }
 
       if (beatInBar < offbeatToggles.length && offbeatToggles[beatInBar]) {
         final halfTick = _nextBeatTickMs + (_beatIntervalMs / 2).round();
-        await audioService.scheduleClick(
+        // Offbeats use beat sound at reduced velocity
+        final offbeatVel = (beatVelocity * 0.7).round().clamp(0, 127);
+        await audioService.scheduleSound(
           halfTick,
-          key: ClickSound.regular,
-          velocity: 70,
+          channel: beatChannel,
+          key: beatKey,
+          velocity: offbeatVel,
         );
       }
 

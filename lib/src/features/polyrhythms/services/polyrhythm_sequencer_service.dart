@@ -14,6 +14,21 @@ class PolyrhythmSequencerService {
   int bpm = 120;
   bool showSubdivision = false;
 
+  // Mixer: voice A
+  int aChannel = 1;
+  int aKey = ClickSound.polyA;
+  int aVelocity = 100;
+
+  // Mixer: voice B
+  int bChannel = 1;
+  int bKey = ClickSound.polyB;
+  int bVelocity = 80;
+
+  // Mixer: subdivision
+  int subChannel = 1;
+  int subKey = ClickSound.polySub;
+  int subVelocity = 40;
+
   void Function(int indexA, int indexB)? onBeat;
 
   Timer? _timer;
@@ -114,17 +129,23 @@ class PolyrhythmSequencerService {
 
       if (tickMs == (_cycleStartTickMs + (_nextIndexA * _intervalA).round()) &&
           _nextIndexA < a) {
-        await audioService.scheduleClick(tickMs, key: ClickSound.polyA);
+        await audioService.scheduleSound(
+          tickMs,
+          channel: aChannel,
+          key: aKey,
+          velocity: aVelocity,
+        );
         beatA = _nextIndexA;
         _nextIndexA++;
       }
 
       if (tickMs == (_cycleStartTickMs + (_nextIndexB * _intervalB).round()) &&
           _nextIndexB < b) {
-        await audioService.scheduleClick(
+        await audioService.scheduleSound(
           tickMs,
-          key: ClickSound.polyB,
-          velocity: 80,
+          channel: bChannel,
+          key: bKey,
+          velocity: bVelocity,
         );
         beatB = _nextIndexB;
         _nextIndexB++;
@@ -136,10 +157,11 @@ class PolyrhythmSequencerService {
               (_cycleStartTickMs + (_nextIndexSub * _intervalSub).round())) {
         // Only schedule subdivision if no A or B was scheduled at this tick
         if (beatA < 0 && beatB < 0) {
-          await audioService.scheduleClick(
+          await audioService.scheduleSound(
             tickMs,
-            key: ClickSound.polySub,
-            velocity: 40,
+            channel: subChannel,
+            key: subKey,
+            velocity: subVelocity,
           );
         }
         _nextIndexSub++;

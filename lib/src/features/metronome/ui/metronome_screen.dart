@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../common/mixer/mixer_sheet.dart';
 import '../../../common/widgets/tempo_wheel_overlay.dart';
 import '../providers/metronome_providers.dart';
 import 'widgets/beat_pattern_editor.dart';
@@ -19,7 +20,15 @@ class MetronomeScreen extends ConsumerWidget {
     final notifier = ref.read(metronomeProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Metronome')),
+      appBar: AppBar(
+        title: const Text('Metronome'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.tune),
+            onPressed: () => showMixerSheet(context),
+          ),
+        ],
+      ),
       body: LayoutBuilder(
         builder: (context, constraints) {
           final showInlineWheel =

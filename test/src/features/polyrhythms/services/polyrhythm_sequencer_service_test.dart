@@ -13,9 +13,10 @@ void main() {
     sequencer = PolyrhythmSequencerService(audioService: mockAudio);
   });
 
-  List<int> clickTicks() =>
-      mockAudio.scheduledClicks.map((c) => c.tick).toList();
-  List<int> clickKeys() => mockAudio.scheduledClicks.map((c) => c.key).toList();
+  List<int> soundTicks() =>
+      mockAudio.scheduledSounds.map((c) => c.tick).toList();
+  List<int> soundKeys() =>
+      mockAudio.scheduledSounds.map((c) => c.key).toList();
 
   group('two-voice timing', () {
     test('3:4 at 600 BPM schedules correctly', () async {
@@ -33,7 +34,7 @@ void main() {
       // A: 0, 100, 200
       // B: 0, 75, 150
       // Combined sorted unique: 0, 75, 100, 150, 200
-      expect(clickTicks(), equals([0, 0, 75, 100, 150, 200]));
+      expect(soundTicks(), equals([0, 0, 75, 100, 150, 200]));
     });
 
     test('voice A uses polyA key', () async {
@@ -46,7 +47,7 @@ void main() {
       await sequencer.stop();
 
       // Both hit at tick 0
-      expect(clickKeys(), contains(ClickSound.polyA));
+      expect(soundKeys(), contains(ClickSound.polyA));
     });
 
     test('voice B uses polyB key', () async {
@@ -58,7 +59,7 @@ void main() {
       await sequencer.start();
       await sequencer.stop();
 
-      expect(clickKeys(), contains(ClickSound.polyB));
+      expect(soundKeys(), contains(ClickSound.polyB));
     });
   });
 
@@ -77,10 +78,10 @@ void main() {
       await sequencer.stop();
 
       // Sub ticks that don't overlap A or B get polySub key
-      final subClicks = mockAudio.scheduledClicks
+      final subSounds = mockAudio.scheduledSounds
           .where((c) => c.key == ClickSound.polySub)
           .toList();
-      expect(subClicks, isNotEmpty);
+      expect(subSounds, isNotEmpty);
     });
 
     test('subdivision not scheduled at A or B times', () async {
@@ -94,13 +95,14 @@ void main() {
       await sequencer.stop();
 
       // Get ticks where A or B was scheduled
-      final abTicks = mockAudio.scheduledClicks
-          .where((c) => c.key == ClickSound.polyA || c.key == ClickSound.polyB)
+      final abTicks = mockAudio.scheduledSounds
+          .where(
+              (c) => c.key == ClickSound.polyA || c.key == ClickSound.polyB)
           .map((c) => c.tick)
           .toSet();
 
       // Sub ticks should not overlap with A/B ticks
-      final subTicks = mockAudio.scheduledClicks
+      final subTicks = mockAudio.scheduledSounds
           .where((c) => c.key == ClickSound.polySub)
           .map((c) => c.tick);
 
@@ -111,9 +113,6 @@ void main() {
 
     test('subdivision fills entire cycle', () async {
       // 3:2, bpm=600 → cycle=300ms, LCM=6, sub interval=50ms
-      // A: 0, 100, 200 — B: 0, 150 — all within 200ms horizon
-      // Sub: 0, 50, 100, 150, 200, 250 — tick 250 beyond first horizon
-      // Bug: old code resets cycle when A&B done, losing sub at 250
       sequencer.a = 3;
       sequencer.b = 2;
       sequencer.bpm = 600;
@@ -122,25 +121,18 @@ void main() {
 
       await sequencer.start();
 
-      // Advance time so the next tick schedules sub beat at 250
       mockAudio.currentTick = 100;
-      // Trigger one more scheduling pass via stop flush
-      // (stop doesn't call _tick, but we can start→advance→stop to
-      //  verify sub at 250 isn't lost by premature cycle reset)
 
-      // Instead, just verify that sub ticks scheduled so far include 200
-      // (the last sub within first horizon) and that no new-cycle A/B
-      // ticks appear prematurely at cycle start positions
       await sequencer.stop();
 
-      final subTicks = mockAudio.scheduledClicks
+      final subTicks = mockAudio.scheduledSounds
           .where((c) => c.key == ClickSound.polySub)
           .map((c) => c.tick)
           .toList();
       // Sub at 50 is non-overlapping with A(0,100,200) or B(0,150)
       expect(subTicks, contains(50));
       // Verify no premature second-cycle A ticks (would be at 300)
-      final aTicks = mockAudio.scheduledClicks
+      final aTicks = mockAudio.scheduledSounds
           .where((c) => c.key == ClickSound.polyA)
           .map((c) => c.tick)
           .toList();
@@ -157,10 +149,10 @@ void main() {
       await sequencer.start();
       await sequencer.stop();
 
-      final subClicks = mockAudio.scheduledClicks
+      final subSounds = mockAudio.scheduledSounds
           .where((c) => c.key == ClickSound.polySub)
           .toList();
-      expect(subClicks, isEmpty);
+      expect(subSounds, isEmpty);
     });
   });
 

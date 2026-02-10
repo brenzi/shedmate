@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../common/mixer/mixer_sheet.dart';
 import '../../../common/widgets/tempo_wheel_overlay.dart';
 import '../providers/polyrhythm_providers.dart';
 import 'widgets/polyrhythm_leds.dart';
@@ -16,7 +17,15 @@ class PolyrhythmsScreen extends ConsumerWidget {
     final notifier = ref.read(polyrhythmProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Polyrhythms')),
+      appBar: AppBar(
+        title: const Text('Polyrhythms'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.tune),
+            onPressed: () => showMixerSheet(context),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           const Expanded(child: Center(child: PolyrhythmLeds())),

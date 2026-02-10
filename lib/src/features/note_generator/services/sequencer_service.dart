@@ -22,6 +22,14 @@ class SequencerService {
   int? rootPitchClass;
   ScaleType? scaleType;
 
+  // Mixer: piano
+  int pianoVelocity = 100;
+
+  // Mixer: click sound
+  int clickChannel = 1;
+  int clickKey = 76;
+  int clickVelocity = 100;
+
   // Callbacks for UI
   void Function(int midiNote)? onNewNote;
   void Function(int beatInMeasure)? onBeat;
@@ -66,14 +74,24 @@ class SequencerService {
       final beatInMeasure = _nextBeatIndex % beatsPerNote;
 
       if (metronomeEnabled) {
-        await audioService.scheduleClick(_nextBeatTickMs);
+        await audioService.scheduleSound(
+          _nextBeatTickMs,
+          channel: clickChannel,
+          key: clickKey,
+          velocity: clickVelocity,
+        );
       }
 
       if (beatInMeasure == 0 && pianoEnabled) {
         final note = _randomNote();
         final duration = (_beatIntervalMs * beatsPerNote - _noteReleaseGapMs)
             .round();
-        await audioService.scheduleNote(_nextBeatTickMs, note, duration);
+        await audioService.scheduleNote(
+          _nextBeatTickMs,
+          note,
+          duration,
+          velocity: pianoVelocity,
+        );
         onNewNote?.call(note);
       }
 

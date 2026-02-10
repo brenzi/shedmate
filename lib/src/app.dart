@@ -1,18 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'common/providers.dart';
 import 'features/metronome/ui/metronome_screen.dart';
 import 'features/note_generator/ui/note_generator_screen.dart';
 import 'features/polyrhythms/ui/polyrhythms_screen.dart';
 
-class App extends StatefulWidget {
+class App extends ConsumerStatefulWidget {
   const App({super.key});
 
   @override
-  State<App> createState() => _AppState();
+  ConsumerState<App> createState() => _AppState();
 }
 
-class _AppState extends State<App> {
+class _AppState extends ConsumerState<App> {
   int _currentIndex = 0;
+
+  void _onTabSelected(int i) {
+    setState(() => _currentIndex = i);
+    ref.read(activeTabProvider.notifier).state = i;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +41,7 @@ class _AppState extends State<App> {
         ),
         bottomNavigationBar: NavigationBar(
           selectedIndex: _currentIndex,
-          onDestinationSelected: (i) => setState(() => _currentIndex = i),
+          onDestinationSelected: _onTabSelected,
           destinations: const [
             NavigationDestination(icon: Icon(Icons.music_note), label: 'Notes'),
             NavigationDestination(icon: Icon(Icons.timer), label: 'Metronome'),

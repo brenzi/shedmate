@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../common/audio_service.dart';
+import '../../../common/mixer/mixer_providers.dart';
+import '../../../common/mixer/mixer_state.dart';
 import '../../../common/providers.dart';
 import '../../../common/wake_lock_service.dart';
 import '../domain/polyrhythm_state.dart';
@@ -28,6 +30,7 @@ class PolyrhythmNotifier extends Notifier<PolyrhythmState> {
     _prefs = ref.read(sharedPrefsProvider);
     _sequencer = PolyrhythmSequencerService(audioService: _audioService);
     _sequencer.onBeat = _onBeat;
+    ref.listen(mixerProvider, (_, mixer) => _syncMixerParams(mixer));
     ref.onDispose(_dispose);
     return _load();
   }
@@ -99,11 +102,26 @@ class PolyrhythmNotifier extends Notifier<PolyrhythmState> {
   }
 
   void _syncParams() {
+    final mixer = ref.read(mixerProvider);
     _sequencer
       ..a = state.a
       ..b = state.b
       ..bpm = state.bpm
       ..showSubdivision = state.showSubdivision;
+    _syncMixerParams(mixer);
+  }
+
+  void _syncMixerParams(MixerState mixer) {
+    _sequencer
+      ..aChannel = mixer.polyA.channel
+      ..aKey = mixer.polyA.key
+      ..aVelocity = mixer.polyA.velocity
+      ..bChannel = mixer.polyB.channel
+      ..bKey = mixer.polyB.key
+      ..bVelocity = mixer.polyB.velocity
+      ..subChannel = mixer.polySub.channel
+      ..subKey = mixer.polySub.key
+      ..subVelocity = mixer.polySub.velocity;
   }
 
   Future<void> _dispose() async {

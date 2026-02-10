@@ -49,19 +49,48 @@ class AudioService {
 
   Future<int> getCurrentTick() => _midi.getSequencerTick(sfId: _sfId);
 
-  Future<void> scheduleNote(int tick, int midiNote, int durationMs) async {
+  Future<void> scheduleNote(
+    int tick,
+    int midiNote,
+    int durationMs, {
+    int velocity = 100,
+  }) async {
     await _midi.scheduleNoteOn(
       sfId: _sfId,
       tick: tick,
       channel: _pianoChannel,
       key: midiNote,
-      velocity: 100,
+      velocity: velocity,
     );
     await _midi.scheduleNoteOff(
       sfId: _sfId,
       tick: tick + durationMs,
       channel: _pianoChannel,
       key: midiNote,
+    );
+  }
+
+  /// Generic sound scheduling — routes to the correct channel.
+  /// channel: 1 = click, 2 = drums.
+  Future<void> scheduleSound(
+    int tick, {
+    required int channel,
+    required int key,
+    required int velocity,
+  }) async {
+    final midiChannel = channel == 1 ? _clickChannel : _drumsChannel;
+    await _midi.scheduleNoteOn(
+      sfId: _sfId,
+      tick: tick,
+      channel: midiChannel,
+      key: key,
+      velocity: velocity,
+    );
+    await _midi.scheduleNoteOff(
+      sfId: _sfId,
+      tick: tick + _clickDurationMs,
+      channel: midiChannel,
+      key: key,
     );
   }
 

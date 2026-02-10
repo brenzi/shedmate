@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../common/audio_service.dart';
 import '../../../common/midi_utils.dart';
+import '../../../common/mixer/mixer_providers.dart';
+import '../../../common/mixer/mixer_state.dart';
 import '../../../common/providers.dart';
 import '../../../common/wake_lock_service.dart';
 import '../domain/note_range.dart';
@@ -132,6 +134,7 @@ class NoteGeneratorNotifier extends Notifier<NoteGeneratorState> {
     _sequencer = SequencerService(audioService: _audioService);
     _sequencer.onNewNote = _onNewNote;
     _sequencer.onBeat = _onBeat;
+    ref.listen(mixerProvider, (_, mixer) => _syncMixerParams(mixer));
     ref.onDispose(_dispose);
     _ensureInit(); // eager: audio driver warms up while user sees UI
     return _load();
@@ -236,6 +239,7 @@ class NoteGeneratorNotifier extends Notifier<NoteGeneratorState> {
   }
 
   void _syncSequencerParams() {
+    final mixer = ref.read(mixerProvider);
     _sequencer
       ..bpm = state.bpm
       ..beatsPerNote = state.beatsPerNote
@@ -247,6 +251,15 @@ class NoteGeneratorNotifier extends Notifier<NoteGeneratorState> {
       ..maxInterval = state.maxInterval
       ..rootPitchClass = state.rootPitchClass
       ..scaleType = state.scaleType;
+    _syncMixerParams(mixer);
+  }
+
+  void _syncMixerParams(MixerState mixer) {
+    _sequencer
+      ..pianoVelocity = (mixer.noteGenPianoVolume * 127).round().clamp(0, 127)
+      ..clickChannel = mixer.noteGenClick.channel
+      ..clickKey = mixer.noteGenClick.key
+      ..clickVelocity = mixer.noteGenClick.velocity;
   }
 
   Future<void> _dispose() async {

@@ -13,21 +13,25 @@ void main() {
     sequencer = MetronomeSequencerService(audioService: mockAudio);
   });
 
-  List<int> clickTicks() =>
-      mockAudio.scheduledClicks.map((c) => c.tick).toList();
-  List<int> clickKeys() => mockAudio.scheduledClicks.map((c) => c.key).toList();
-  List<int> clickVelocities() =>
-      mockAudio.scheduledClicks.map((c) => c.velocity).toList();
+  // Sounds now go through scheduleSound
+  List<int> soundTicks() =>
+      mockAudio.scheduledSounds.map((c) => c.tick).toList();
+  List<int> soundKeys() =>
+      mockAudio.scheduledSounds.map((c) => c.key).toList();
+  List<int> soundVelocities() =>
+      mockAudio.scheduledSounds.map((c) => c.velocity).toList();
+  List<int> soundChannels() =>
+      mockAudio.scheduledSounds.map((c) => c.channel).toList();
 
   group('basic scheduling', () {
-    test('schedules clicks on start', () async {
+    test('schedules sounds on start', () async {
       sequencer.bpm = 120;
       mockAudio.currentTick = 0;
 
       await sequencer.start();
       await sequencer.stop();
 
-      expect(mockAudio.scheduledClicks, isNotEmpty);
+      expect(mockAudio.scheduledSounds, isNotEmpty);
     });
 
     test('schedules correct number of beats in lookahead', () async {
@@ -39,7 +43,7 @@ void main() {
       await sequencer.stop();
 
       // 200ms lookahead, 100ms interval → ticks at 0, 100, 200
-      expect(clickTicks(), equals([0, 100, 200]));
+      expect(soundTicks(), equals([0, 100, 200]));
     });
 
     test('stop calls stopAllNotes', () async {
@@ -51,7 +55,7 @@ void main() {
   });
 
   group('beat toggles', () {
-    test('disabled beat produces no click', () async {
+    test('disabled beat produces no sound', () async {
       sequencer.bpm = 120; // 500ms → only 1 beat in lookahead
       sequencer.beatsPerBar = 4;
       sequencer.beatToggles = [false, true, true, true];
@@ -60,11 +64,11 @@ void main() {
       await sequencer.start();
       await sequencer.stop();
 
-      // Beat 0 is off → no click
-      expect(mockAudio.scheduledClicks, isEmpty);
+      // Beat 0 is off → no sound
+      expect(mockAudio.scheduledSounds, isEmpty);
     });
 
-    test('toggled beats produce clicks selectively', () async {
+    test('toggled beats produce sounds selectively', () async {
       sequencer.bpm = 600; // 100ms per beat
       sequencer.beatsPerBar = 4;
       sequencer.beatToggles = [true, false, true, false];
@@ -74,12 +78,12 @@ void main() {
       await sequencer.stop();
 
       // Beats at 0ms(on), 100ms(off), 200ms(on)
-      expect(clickTicks(), equals([0, 200]));
+      expect(soundTicks(), equals([0, 200]));
     });
   });
 
   group('offbeats', () {
-    test('offbeat adds click at half interval', () async {
+    test('offbeat adds sound at half interval', () async {
       sequencer.bpm = 120; // 500ms per beat
       sequencer.beatsPerBar = 4;
       sequencer.offbeatToggles = [true, false, false, false];
@@ -89,7 +93,7 @@ void main() {
       await sequencer.stop();
 
       // Beat at 0, offbeat at 250
-      expect(clickTicks(), equals([0, 250]));
+      expect(soundTicks(), equals([0, 250]));
     });
 
     test('offbeat has reduced velocity', () async {
@@ -101,13 +105,13 @@ void main() {
       await sequencer.start();
       await sequencer.stop();
 
-      // First click (beat) = 100 velocity, second (offbeat) = 70
-      expect(clickVelocities(), equals([100, 70]));
+      // First sound (beat) = 100 velocity, second (offbeat) = 70% of 100 = 70
+      expect(soundVelocities(), equals([100, 70]));
     });
   });
 
   group('accents', () {
-    test('accent on beat 1 uses accent key', () async {
+    test('accent on beat 1 uses bar key', () async {
       sequencer.bpm = 120;
       sequencer.beatsPerBar = 4;
       sequencer.accentBeat1 = true;
@@ -116,7 +120,7 @@ void main() {
       await sequencer.start();
       await sequencer.stop();
 
-      expect(clickKeys().first, ClickSound.accent);
+      expect(soundKeys().first, ClickSound.accent);
     });
 
     test('no accent uses regular key', () async {
@@ -128,12 +132,12 @@ void main() {
       await sequencer.start();
       await sequencer.stop();
 
-      expect(clickKeys().first, ClickSound.regular);
+      expect(soundKeys().first, ClickSound.regular);
     });
   });
 
   group('section markers', () {
-    test('section start uses drum hit with section key', () async {
+    test('section start uses drum channel with section key', () async {
       sequencer.bpm = 120;
       sequencer.beatsPerBar = 1; // 1 beat per bar
       sequencer.barsPerSection = 4;
@@ -144,10 +148,9 @@ void main() {
       await sequencer.stop();
 
       // Beat 0 = bar 0, beat 0 → section marker on drums channel
-      expect(mockAudio.scheduledDrumHits, isNotEmpty);
-      expect(mockAudio.scheduledDrumHits.first.key, ClickSound.section);
-      // No click scheduled for beat 0 (section uses drum hit instead)
-      expect(clickKeys(), isNot(contains(ClickSound.section)));
+      expect(mockAudio.scheduledSounds, isNotEmpty);
+      expect(mockAudio.scheduledSounds.first.key, ClickSound.section);
+      expect(mockAudio.scheduledSounds.first.channel, 2); // drums channel
     });
 
     test('section plays when beat 1 is toggled off', () async {
@@ -160,8 +163,8 @@ void main() {
       await sequencer.start();
       await sequencer.stop();
 
-      expect(mockAudio.scheduledDrumHits, isNotEmpty);
-      expect(mockAudio.scheduledDrumHits.first.key, ClickSound.section);
+      expect(mockAudio.scheduledSounds, isNotEmpty);
+      expect(mockAudio.scheduledSounds.first.key, ClickSound.section);
     });
 
     test('no click at section start even when beat enabled', () async {
@@ -174,9 +177,10 @@ void main() {
       await sequencer.start();
       await sequencer.stop();
 
-      // Section fires drum hit; no click at same tick
-      expect(mockAudio.scheduledDrumHits.first.tick, 0);
-      expect(clickTicks(), isNot(contains(0)));
+      // Section fires sound; only one sound at tick 0 (section, not beat)
+      final atZero = mockAudio.scheduledSounds.where((s) => s.tick == 0);
+      expect(atZero.length, 1);
+      expect(atZero.first.key, ClickSound.section);
     });
 
     test('section overrides accent', () async {
@@ -189,12 +193,13 @@ void main() {
       await sequencer.start();
       await sequencer.stop();
 
-      // Beat 0 (bar 0, beat 0) = section → drum hit, not click
+      // Beat 0 (bar 0, beat 0) = section → drums channel
       // Beat 1 (bar 0, beat 1) = regular click
       // Beat 2 (bar 1, beat 0) = accent click (not section start)
-      expect(mockAudio.scheduledDrumHits.first.key, ClickSound.section);
-      expect(clickKeys()[0], ClickSound.regular);
-      expect(clickKeys()[1], ClickSound.accent);
+      expect(soundKeys()[0], ClickSound.section);
+      expect(soundChannels()[0], 2);
+      expect(soundKeys()[1], ClickSound.regular);
+      expect(soundKeys()[2], ClickSound.accent);
     });
   });
 

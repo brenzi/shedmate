@@ -8,7 +8,12 @@ class FakeAudioService extends AudioService {
   @override
   Future<int> getCurrentTick() async => 0;
   @override
-  Future<void> scheduleNote(int tick, int midiNote, int durationMs) async {}
+  Future<void> scheduleNote(
+    int tick,
+    int midiNote,
+    int durationMs, {
+    int velocity = 100,
+  }) async {}
   @override
   Future<void> scheduleClick(
     int tick, {
@@ -20,6 +25,13 @@ class FakeAudioService extends AudioService {
     int tick, {
     int key = 49,
     int velocity = 100,
+  }) async {}
+  @override
+  Future<void> scheduleSound(
+    int tick, {
+    required int channel,
+    required int key,
+    required int velocity,
   }) async {}
   @override
   Future<void> stopAllNotes() async {}
