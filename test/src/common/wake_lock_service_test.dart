@@ -4,6 +4,8 @@ import 'package:jazz_practice_tools/src/common/wake_lock_service.dart';
 void main() {
   group('WakeLockService', () {
     setUp(() async {
+      // Initialize Flutter binding for platform channels
+      TestWidgetsFlutterBinding.ensureInitialized();
       // Reset the counter and wake lock state before each test
       await WakeLockService.instance.reset();
     });

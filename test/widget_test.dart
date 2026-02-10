@@ -77,13 +77,11 @@ void main() {
     // Scroll to make it visible if needed
     await tester.scrollUntilVisible(playFinder, 100);
     await tester.tap(playFinder);
-    await tester.pump();
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(find.text('Stop'), findsOneWidget);
     expect(find.byIcon(Icons.stop), findsOneWidget);
     await tester.tap(find.text('Stop'));
-    await tester.pump();
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(find.text('Play'), findsOneWidget);
   });
 

@@ -60,12 +60,10 @@ void main() {
   testWidgets('play toggles to stop', (tester) async {
     await tester.pumpWidget(_buildTestApp());
     await tester.tap(find.text('Play'));
-    await tester.pump();
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(find.text('Stop'), findsOneWidget);
     await tester.tap(find.text('Stop'));
-    await tester.pump();
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(find.text('Play'), findsOneWidget);
   });
 }
