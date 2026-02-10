@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../common/audio_service.dart';
 import '../../../common/providers.dart';
+import '../../../common/wake_lock_service.dart';
 import '../domain/polyrhythm_state.dart';
 import '../services/polyrhythm_sequencer_service.dart';
 
@@ -57,6 +58,7 @@ class PolyrhythmNotifier extends Notifier<PolyrhythmState> {
   Future<void> togglePlay() async {
     if (state.isPlaying) {
       await _sequencer.stop();
+      await WakeLockService.instance.disable();
       state = state.copyWith(
         isPlaying: false,
         currentTickA: -1,
@@ -66,6 +68,7 @@ class PolyrhythmNotifier extends Notifier<PolyrhythmState> {
       await _ensureInit();
       _syncParams();
       await _sequencer.start();
+      await WakeLockService.instance.enable();
       state = state.copyWith(isPlaying: true);
     }
   }
@@ -104,6 +107,9 @@ class PolyrhythmNotifier extends Notifier<PolyrhythmState> {
   }
 
   Future<void> _dispose() async {
-    if (_sequencer.isPlaying) await _sequencer.stop();
+    if (_sequencer.isPlaying) {
+      await _sequencer.stop();
+      await WakeLockService.instance.disable();
+    }
   }
 }

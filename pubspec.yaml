@@ -13,6 +13,7 @@ dependencies:
   flutter_midi_pro:
     path: ../flutter_midi_pro_sequencer
   shared_preferences: ^2.5.4
+  wakelock_plus: ^1.2.8
 
 dev_dependencies:
   flutter_test:
