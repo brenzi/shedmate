@@ -26,7 +26,10 @@ class WakeLockService {
   }
 
   /// For testing: reset the counter
-  void reset() {
+  Future<void> reset() async {
+    if (_activeCount > 0) {
+      await WakelockPlus.disable();
+    }
     _activeCount = 0;
   }
 }

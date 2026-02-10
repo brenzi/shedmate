@@ -3,9 +3,9 @@ import 'package:jazz_practice_tools/src/common/wake_lock_service.dart';
 
 void main() {
   group('WakeLockService', () {
-    setUp(() {
-      // Reset the counter before each test
-      WakeLockService.instance.reset();
+    setUp(() async {
+      // Reset the counter and wake lock state before each test
+      await WakeLockService.instance.reset();
     });
 
     test('singleton instance returns same object', () {
@@ -14,14 +14,11 @@ void main() {
       expect(identical(instance1, instance2), isTrue);
     });
 
-    test('enable increments active count', () async {
-      await WakeLockService.instance.enable();
-      // We can't directly test the wakelock state without mocking,
-      // but we can test the counter behavior by enabling/disabling
+    test('enable and disable can be called in sequence', () async {
+      // Test basic enable/disable flow
       await WakeLockService.instance.enable();
       await WakeLockService.instance.disable();
-      await WakeLockService.instance.disable();
-      // If counter works correctly, this should succeed without error
+      // Should complete without errors
     });
 
     test('disable does not go below zero', () async {
@@ -31,16 +28,34 @@ void main() {
       // Should complete without errors
     });
 
-    test('enable and disable can be called multiple times', () async {
+    test('multiple features can enable and disable independently', () async {
       // Simulate multiple features playing
+      // When first feature starts, wake lock should be enabled
       await WakeLockService.instance.enable(); // Feature 1
+      
+      // When second feature starts, wake lock stays enabled
       await WakeLockService.instance.enable(); // Feature 2
+      
+      // When third feature starts, wake lock stays enabled
       await WakeLockService.instance.enable(); // Feature 3
       
+      // When first feature stops, wake lock stays enabled (count = 2)
       await WakeLockService.instance.disable(); // Feature 1 stops
+      
+      // When second feature stops, wake lock stays enabled (count = 1)
       await WakeLockService.instance.disable(); // Feature 2 stops
+      
+      // When last feature stops, wake lock should be disabled (count = 0)
       await WakeLockService.instance.disable(); // Feature 3 stops
       
+      // Should complete without errors
+    });
+
+    test('reset cleans up wake lock state', () async {
+      await WakeLockService.instance.enable();
+      await WakeLockService.instance.enable();
+      // Reset should disable wake lock and reset counter
+      await WakeLockService.instance.reset();
       // Should complete without errors
     });
   });
