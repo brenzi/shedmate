@@ -1,13 +1,33 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jazz_practice_tools/src/common/wake_lock_service.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('WakeLockService', () {
     setUp(() async {
-      // Initialize Flutter binding for platform channels
-      TestWidgetsFlutterBinding.ensureInitialized();
+      // Mock the wakelock platform channel
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+        const MethodChannel('dev.flutter.pigeon.wakelock_plus_platform_interface.WakelockPlusApi.toggle'),
+        (MethodCall methodCall) async {
+          // Mock implementation - just return success
+          return null;
+        },
+      );
+
       // Reset the counter and wake lock state before each test
       await WakeLockService.instance.reset();
+    });
+
+    tearDown(() {
+      // Clean up the mock
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+        const MethodChannel('dev.flutter.pigeon.wakelock_plus_platform_interface.WakelockPlusApi.toggle'),
+        null,
+      );
     });
 
     test('singleton instance returns same object', () {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,9 +29,29 @@ Widget _buildTestApp() {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   setUp(() async {
+    // Mock the wakelock platform channel
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      const MethodChannel('dev.flutter.pigeon.wakelock_plus_platform_interface.WakelockPlusApi.toggle'),
+      (MethodCall methodCall) async {
+        return null;
+      },
+    );
+
     SharedPreferences.setMockInitialValues({});
     _prefs = await SharedPreferences.getInstance();
+  });
+
+  tearDown(() {
+    // Clean up the mock
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      const MethodChannel('dev.flutter.pigeon.wakelock_plus_platform_interface.WakelockPlusApi.toggle'),
+      null,
+    );
   });
 
   testWidgets('renders polyrhythms screen', (tester) async {
