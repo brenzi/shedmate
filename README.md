@@ -1,16 +1,62 @@
-# jazz_practice_tools
+# Jazz Practice Tools
 
-A new Flutter project.
+A mobile practice companion for jazz musicians. Built with Flutter and Material 3.
+
+## Features
+
+**Random Note Generator** — Generates random piano notes at a configurable tempo. Set a tonal range (with presets for Tenor Sax and Alto Flute), beats per note, and BPM. Toggle piano sound and metronome clicks independently.
+
+**Metronome** — Standalone metronome with customizable beat, bar and section accents.
+
+**Polyrhythm Trainer** — Practice polyrhythmic patterns with independent click layers.
+
+All features use sample-accurate fluidsynth MIDI playback via SoundFont samples (Salamander piano, click, drums) with real-time parameter changes that maintain strict timing.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+### Prerequisites
 
-A few resources to get you started if this is your first Flutter project:
+- Flutter SDK (3.32+, Dart ^3.10.8)
+- Android Studio with Flutter plugin
+- JDK 17
+- Android SDK
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### Build & Run
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+flutter pub get
+flutter run
+```
+
+### Development
+
+```bash
+flutter analyze
+flutter test
+dart format .
+flutter build apk
+```
+
+## Architecture
+
+Feature-first organization with Riverpod state management.
+
+```
+lib/
+  main.dart
+  src/
+    app.dart
+    common/          # Shared audio service, MIDI utilities, mixer, widgets
+    features/
+      note_generator/  # Random note generation
+      metronome/       # Standalone metronome
+      polyrhythms/     # Polyrhythm trainer
+```
+
+Each feature follows the pattern: `domain/` (models) → `providers/` (Riverpod state) → `services/` (logic) → `ui/` (widgets).
+
+Audio is handled through a common `AudioService` backed by [flutter_midi_pro](https://github.com/brenzi/flutter_midi_pro) with three MIDI channels: piano, click, and drums.
+
+## License
+
+[GPLv3](LICENSE)

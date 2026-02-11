@@ -113,9 +113,11 @@ packages:
   flutter_midi_pro:
     dependency: "direct main"
     description:
-      path: "../flutter_midi_pro_sequencer"
-      relative: true
-    source: path
+      path: "."
+      ref: "ab/expose-realtime-note-injection"
+      resolved-ref: fad6b184d7c53394fb178748343e0152f6894f3a
+      url: "https://github.com/brenzi/flutter_midi_pro.git"
+    source: git
     version: "3.1.7"
   flutter_riverpod:
     dependency: "direct main"
