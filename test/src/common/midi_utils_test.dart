@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jazz_practice_tools/src/common/midi_utils.dart';
+import 'package:shedmate/src/common/midi_utils.dart';
 
 void main() {
   group('midiNoteToName', () {

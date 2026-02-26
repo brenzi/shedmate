@@ -1,7 +1,7 @@
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jazz_practice_tools/src/common/wake_lock_service.dart';
+import 'package:shedmate/src/common/wake_lock_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

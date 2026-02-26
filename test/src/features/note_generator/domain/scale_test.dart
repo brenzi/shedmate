@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jazz_practice_tools/src/features/note_generator/domain/scale.dart';
+import 'package:shedmate/src/features/note_generator/domain/scale.dart';
 
 void main() {
   test('C major pitch classes', () {

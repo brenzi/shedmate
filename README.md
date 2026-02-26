@@ -1,4 +1,4 @@
-# Jazz Practice Tools
+# ShedMate
 
 A mobile practice companion for jazz musicians. Built with Flutter and Material 3.
 
@@ -16,10 +16,20 @@ All features use sample-accurate fluidsynth MIDI playback via SoundFont samples 
 
 ### Prerequisites
 
-- Flutter SDK (3.32+, Dart ^3.10.8)
+- Flutter SDK (3.38+, Dart ^3.10.8) don't use snap!
 - Android Studio with Flutter plugin
 - JDK 17
 - Android SDK
+ 
+```bash
+curl -LO https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.32.2-stable.tar.xz
+  tar xf flutter_linux_3.32.2-stable.tar.xz
+
+# Add to your ~/.bashrc or ~/.zshrc:
+export PATH="$HOME/flutter/bin:$PATH"
+
+flutter doctor
+```
 
 ### Build & Run
 

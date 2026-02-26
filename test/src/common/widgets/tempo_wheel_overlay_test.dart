@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jazz_practice_tools/src/common/widgets/tempo_wheel_overlay.dart';
+import 'package:shedmate/src/common/widgets/tempo_wheel_overlay.dart';
 
 Widget _buildApp({
   required int initialBpm,

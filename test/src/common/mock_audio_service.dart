@@ -1,4 +1,4 @@
-import 'package:jazz_practice_tools/src/common/audio_service.dart';
+import 'package:shedmate/src/common/audio_service.dart';
 
 class MockAudioService extends AudioService {
   MockAudioService() : super(midiPro: null);

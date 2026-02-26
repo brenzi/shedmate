@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jazz_practice_tools/src/features/metronome/domain/metronome_state.dart';
-import 'package:jazz_practice_tools/src/features/note_generator/providers/note_generator_providers.dart';
-import 'package:jazz_practice_tools/src/features/note_generator/domain/scale.dart';
-import 'package:jazz_practice_tools/src/features/polyrhythms/domain/polyrhythm_state.dart';
+import 'package:shedmate/src/features/metronome/domain/metronome_state.dart';
+import 'package:shedmate/src/features/note_generator/providers/note_generator_providers.dart';
+import 'package:shedmate/src/features/note_generator/domain/scale.dart';
+import 'package:shedmate/src/features/polyrhythms/domain/polyrhythm_state.dart';
 
 void main() {
   group('NoteGeneratorState', () {

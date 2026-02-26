@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:jazz_practice_tools/src/app.dart';
-import 'package:jazz_practice_tools/src/common/providers.dart';
+import 'package:shedmate/src/app.dart';
+import 'package:shedmate/src/common/providers.dart';
 
 import 'src/common/fake_audio_service.dart';
 

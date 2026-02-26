@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jazz_practice_tools/src/common/click_sounds.dart';
-import 'package:jazz_practice_tools/src/features/polyrhythms/services/polyrhythm_sequencer_service.dart';
+import 'package:shedmate/src/common/click_sounds.dart';
+import 'package:shedmate/src/features/polyrhythms/services/polyrhythm_sequencer_service.dart';
 
 import '../../../common/mock_audio_service.dart';
 

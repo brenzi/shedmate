@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jazz_practice_tools/src/features/polyrhythms/domain/polyrhythm_math.dart';
+import 'package:shedmate/src/features/polyrhythms/domain/polyrhythm_math.dart';
 
 void main() {
   group('gcd', () {

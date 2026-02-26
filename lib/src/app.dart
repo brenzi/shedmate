@@ -24,7 +24,7 @@ class _AppState extends ConsumerState<App> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Jazz Practice Tools',
+      title: 'ShedMate',
       theme: ThemeData(
         colorSchemeSeed: Colors.indigo,
         brightness: Brightness.dark,
