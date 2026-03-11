@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../domain/transposition.dart';
 import '../../providers/note_generator_providers.dart';
 
 class NoteDisplay extends ConsumerWidget {
@@ -20,16 +21,40 @@ class NoteDisplay extends ConsumerWidget {
     final isPlaying = ref.watch(
       noteGeneratorProvider.select((s) => s.isPlaying),
     );
+    final transposition = ref.watch(
+      noteGeneratorProvider.select((s) => s.transposition),
+    );
 
     return Column(
       children: [
         const SizedBox(height: 12),
-        Text(
-          noteName,
-          style: Theme.of(context).textTheme.displayLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            letterSpacing: 2,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            DropdownButton<Transposition>(
+              value: transposition,
+              underline: const SizedBox.shrink(),
+              items: Transposition.values
+                  .map(
+                    (t) => DropdownMenuItem(value: t, child: Text(t.label)),
+                  )
+                  .toList(),
+              onChanged: (t) {
+                if (t != null) {
+                  ref.read(noteGeneratorProvider.notifier).setTransposition(t);
+                }
+              },
+            ),
+            const SizedBox(width: 8),
+            Text(
+              noteName,
+              style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         Row(

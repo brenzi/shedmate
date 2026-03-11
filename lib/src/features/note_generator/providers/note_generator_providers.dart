@@ -11,6 +11,7 @@ import '../../../common/providers.dart';
 import '../../../common/wake_lock_service.dart';
 import '../domain/note_range.dart';
 import '../domain/scale.dart';
+import '../domain/transposition.dart';
 import '../services/sequencer_service.dart';
 
 const _sentinel = Object();
@@ -25,11 +26,13 @@ class NoteGeneratorState {
     this.metronomeEnabled = true,
     this.isPlaying = false,
     this.currentNoteName = '---',
+    this.currentMidiNote,
     this.currentBeat = 0,
     this.minInterval = 1,
     this.maxInterval = 12,
     this.rootPitchClass,
     this.scaleType,
+    this.transposition = Transposition.concert,
   });
 
   final int bpm;
@@ -40,11 +43,13 @@ class NoteGeneratorState {
   final bool metronomeEnabled;
   final bool isPlaying;
   final String currentNoteName;
+  final int? currentMidiNote;
   final int currentBeat;
   final int minInterval;
   final int maxInterval;
   final int? rootPitchClass;
   final ScaleType? scaleType;
+  final Transposition transposition;
 
   Map<String, dynamic> toJson() => {
     'bpm': bpm,
@@ -57,6 +62,7 @@ class NoteGeneratorState {
     'maxInterval': maxInterval,
     'rootPitchClass': rootPitchClass,
     'scaleType': scaleType?.name,
+    'transposition': transposition.name,
   };
 
   factory NoteGeneratorState.fromJson(Map<String, dynamic> j) {
@@ -74,6 +80,9 @@ class NoteGeneratorState {
       scaleType: j['scaleType'] != null
           ? ScaleType.values.byName(j['scaleType'] as String)
           : null,
+      transposition: j['transposition'] != null
+          ? Transposition.values.byName(j['transposition'] as String)
+          : d.transposition,
     );
   }
 
@@ -86,11 +95,13 @@ class NoteGeneratorState {
     bool? metronomeEnabled,
     bool? isPlaying,
     String? currentNoteName,
+    Object? currentMidiNote = _sentinel,
     int? currentBeat,
     int? minInterval,
     int? maxInterval,
     Object? rootPitchClass = _sentinel,
     Object? scaleType = _sentinel,
+    Transposition? transposition,
   }) {
     return NoteGeneratorState(
       bpm: bpm ?? this.bpm,
@@ -101,6 +112,9 @@ class NoteGeneratorState {
       metronomeEnabled: metronomeEnabled ?? this.metronomeEnabled,
       isPlaying: isPlaying ?? this.isPlaying,
       currentNoteName: currentNoteName ?? this.currentNoteName,
+      currentMidiNote: currentMidiNote == _sentinel
+          ? this.currentMidiNote
+          : currentMidiNote as int?,
       currentBeat: currentBeat ?? this.currentBeat,
       minInterval: minInterval ?? this.minInterval,
       maxInterval: maxInterval ?? this.maxInterval,
@@ -110,6 +124,7 @@ class NoteGeneratorState {
       scaleType: scaleType == _sentinel
           ? this.scaleType
           : scaleType as ScaleType?,
+      transposition: transposition ?? this.transposition,
     );
   }
 }
@@ -159,7 +174,11 @@ class NoteGeneratorNotifier extends Notifier<NoteGeneratorState> {
   Future<void> _ensureInit() => _initFuture ??= _audioService.init();
 
   void _onNewNote(int midiNote) {
-    state = state.copyWith(currentNoteName: midiNoteToName(midiNote));
+    final display = midiNote + state.transposition.semitones;
+    state = state.copyWith(
+      currentMidiNote: midiNote,
+      currentNoteName: midiNoteToName(display),
+    );
   }
 
   void _onBeat(int beat) {
@@ -173,6 +192,7 @@ class NoteGeneratorNotifier extends Notifier<NoteGeneratorState> {
       state = state.copyWith(
         isPlaying: false,
         currentNoteName: '---',
+        currentMidiNote: null,
         currentBeat: 0,
       );
     } else {
@@ -182,6 +202,13 @@ class NoteGeneratorNotifier extends Notifier<NoteGeneratorState> {
       await WakeLockService.instance.enable();
       state = state.copyWith(isPlaying: true);
     }
+  }
+
+  void setTransposition(Transposition value) {
+    final midi = state.currentMidiNote;
+    final name = midi != null ? midiNoteToName(midi + value.semitones) : state.currentNoteName;
+    state = state.copyWith(transposition: value, currentNoteName: name);
+    _save();
   }
 
   void setBpm(int value) {
