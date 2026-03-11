@@ -39,6 +39,9 @@ class SequencerService {
   int _nextBeatIndex = 0;
   int _nextBeatTickMs = 0;
   int? _previousNote;
+  final List<int> _noteHistory = [];
+
+  static const _historySize = 12;
 
   static const _timerIntervalMs = 50;
   static const _lookaheadMs = 200;
@@ -53,6 +56,7 @@ class SequencerService {
     _nextBeatTickMs = currentTick;
     _nextBeatIndex = 0;
     _previousNote = null;
+    _noteHistory.clear();
     _timer = Timer.periodic(
       const Duration(milliseconds: _timerIntervalMs),
       (_) => _tick(),
@@ -129,8 +133,34 @@ class SequencerService {
       candidates = List.generate(rangeHigh - rangeLow + 1, (i) => rangeLow + i);
     }
 
-    final note = candidates[_random.nextInt(candidates.length)];
+    final note = _weightedPick(candidates);
     _previousNote = note;
+    _noteHistory.add(note);
+    if (_noteHistory.length > _historySize) _noteHistory.removeAt(0);
     return note;
+  }
+
+  /// Weighted random selection: recently played notes are less likely.
+  /// Most recent in history gets weight 0, oldest gets 1.0,
+  /// notes not in history get 1.0.
+  int _weightedPick(List<int> candidates) {
+    if (candidates.length == 1) return candidates.first;
+
+    final weights = candidates.map((note) {
+      final i = _noteHistory.lastIndexOf(note);
+      if (i == -1) return 1.0;
+      final recency = _noteHistory.length - i; // 1 = most recent
+      return (recency - 1) / (_historySize - 1);
+    }).toList();
+
+    final total = weights.fold(0.0, (s, w) => s + w);
+    if (total <= 0) return candidates[_random.nextInt(candidates.length)];
+
+    var roll = _random.nextDouble() * total;
+    for (var j = 0; j < candidates.length; j++) {
+      roll -= weights[j];
+      if (roll <= 0) return candidates[j];
+    }
+    return candidates.last;
   }
 }

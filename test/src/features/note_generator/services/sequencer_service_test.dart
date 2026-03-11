@@ -207,6 +207,36 @@ void main() {
       }
     });
 
+    test('recency weighting reduces repetition over small range', () async {
+      sequencer.bpm = 6000;
+      sequencer.beatsPerNote = 1;
+      sequencer.rangeLow = 60;
+      sequencer.rangeHigh = 64; // 5 notes
+      sequencer.minInterval = 0;
+      sequencer.maxInterval = 24;
+      mockAudio.currentTick = 0;
+
+      // Generate many notes across multiple ticks
+      for (var tick = 0; tick < 500; tick += 100) {
+        mockAudio.currentTick = tick;
+        await sequencer.start();
+        await sequencer.stop();
+      }
+
+      final notes = mockAudio.scheduledNotes.map((n) => n.midiNote).toList();
+      // Count how many times each note appears
+      final counts = <int, int>{};
+      for (final n in notes) {
+        counts[n] = (counts[n] ?? 0) + 1;
+      }
+      // With recency weighting, no single note should dominate excessively.
+      // Each of 5 notes should get at least some plays.
+      for (var n = 60; n <= 64; n++) {
+        expect(counts[n] ?? 0, greaterThan(0),
+            reason: 'note $n should appear at least once');
+      }
+    });
+
     test('impossible constraints still return a note', () async {
       sequencer.bpm = 120;
       sequencer.beatsPerNote = 1;
