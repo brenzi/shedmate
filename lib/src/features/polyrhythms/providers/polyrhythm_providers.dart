@@ -60,20 +60,27 @@ class PolyrhythmNotifier extends Notifier<PolyrhythmState> {
 
   Future<void> togglePlay() async {
     if (state.isPlaying) {
-      await _sequencer.stop();
-      await WakeLockService.instance.disable();
-      state = state.copyWith(
-        isPlaying: false,
-        currentTickA: -1,
-        currentTickB: -1,
-      );
+      await _stop();
+      ref.read(playbackCoordinatorProvider).release(_stop);
     } else {
+      await ref.read(playbackCoordinatorProvider).requestPlayback(_stop);
       await _ensureInit();
       _syncParams();
       await _sequencer.start();
       await WakeLockService.instance.enable();
       state = state.copyWith(isPlaying: true);
     }
+  }
+
+  Future<void> _stop() async {
+    if (!state.isPlaying) return;
+    await _sequencer.stop();
+    await WakeLockService.instance.disable();
+    state = state.copyWith(
+      isPlaying: false,
+      currentTickA: -1,
+      currentTickB: -1,
+    );
   }
 
   void setA(int value) {

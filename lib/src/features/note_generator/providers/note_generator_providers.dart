@@ -187,21 +187,28 @@ class NoteGeneratorNotifier extends Notifier<NoteGeneratorState> {
 
   Future<void> togglePlay() async {
     if (state.isPlaying) {
-      await _sequencer.stop();
-      await WakeLockService.instance.disable();
-      state = state.copyWith(
-        isPlaying: false,
-        currentNoteName: '---',
-        currentMidiNote: null,
-        currentBeat: 0,
-      );
+      await _stop();
+      ref.read(playbackCoordinatorProvider).release(_stop);
     } else {
+      await ref.read(playbackCoordinatorProvider).requestPlayback(_stop);
       await _ensureInit();
       _syncSequencerParams();
       await _sequencer.start();
       await WakeLockService.instance.enable();
       state = state.copyWith(isPlaying: true);
     }
+  }
+
+  Future<void> _stop() async {
+    if (!state.isPlaying) return;
+    await _sequencer.stop();
+    await WakeLockService.instance.disable();
+    state = state.copyWith(
+      isPlaying: false,
+      currentNoteName: '---',
+      currentMidiNote: null,
+      currentBeat: 0,
+    );
   }
 
   void setTransposition(Transposition value) {

@@ -8,6 +8,7 @@ import '../../../common/mixer/mixer_providers.dart';
 import '../../../common/mixer/mixer_state.dart';
 import '../../../common/providers.dart';
 import '../../../common/wake_lock_service.dart';
+
 import '../domain/metronome_state.dart';
 import '../services/metronome_sequencer_service.dart';
 
@@ -56,16 +57,23 @@ class MetronomeNotifier extends Notifier<MetronomeState> {
 
   Future<void> togglePlay() async {
     if (state.isPlaying) {
-      await _sequencer.stop();
-      await WakeLockService.instance.disable();
-      state = state.copyWith(isPlaying: false, currentBeat: 0, currentBar: 0);
+      await _stop();
+      ref.read(playbackCoordinatorProvider).release(_stop);
     } else {
+      await ref.read(playbackCoordinatorProvider).requestPlayback(_stop);
       await _ensureInit();
       _syncParams();
       await _sequencer.start();
       await WakeLockService.instance.enable();
       state = state.copyWith(isPlaying: true);
     }
+  }
+
+  Future<void> _stop() async {
+    if (!state.isPlaying) return;
+    await _sequencer.stop();
+    await WakeLockService.instance.disable();
+    state = state.copyWith(isPlaying: false, currentBeat: 0, currentBar: 0);
   }
 
   void setBpm(int value) {
