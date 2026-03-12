@@ -15,6 +15,9 @@ class RangeSelector extends ConsumerWidget {
     final rangeHigh = ref.watch(
       noteGeneratorProvider.select((s) => s.rangeHigh),
     );
+    final semitones = ref.watch(
+      noteGeneratorProvider.select((s) => s.transposition.semitones),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -25,9 +28,9 @@ class RangeSelector extends ConsumerWidget {
             children: [
               Text('Range', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(width: 12),
-              Text(midiNoteToName(rangeLow)),
+              Text(midiNoteToName(rangeLow + semitones)),
               const Spacer(),
-              Text(midiNoteToName(rangeHigh)),
+              Text(midiNoteToName(rangeHigh + semitones)),
             ],
           ),
         ),
@@ -37,8 +40,8 @@ class RangeSelector extends ConsumerWidget {
           max: NoteRange.pianoHigh.toDouble(),
           divisions: NoteRange.pianoHigh - NoteRange.pianoLow,
           labels: RangeLabels(
-            midiNoteToName(rangeLow),
-            midiNoteToName(rangeHigh),
+            midiNoteToName(rangeLow + semitones),
+            midiNoteToName(rangeHigh + semitones),
           ),
           onChanged: (values) {
             ref

@@ -64,6 +64,9 @@ class NoteRules extends ConsumerWidget {
     final scaleType = ref.watch(
       noteGeneratorProvider.select((s) => s.scaleType),
     );
+    final semitones = ref.watch(
+      noteGeneratorProvider.select((s) => s.transposition.semitones),
+    );
     final notifier = ref.read(noteGeneratorProvider.notifier);
 
     return Column(
@@ -106,7 +109,10 @@ class NoteRules extends ConsumerWidget {
                 items: [
                   const DropdownMenuItem(value: null, child: Text('chromatic')),
                   for (var i = 0; i < 12; i++)
-                    DropdownMenuItem(value: i, child: Text(_noteNames[i])),
+                    DropdownMenuItem(
+                      value: (i - semitones + 12) % 12,
+                      child: Text(_noteNames[i]),
+                    ),
                 ],
                 onChanged: (root) {
                   notifier.setScale(
