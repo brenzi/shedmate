@@ -109,11 +109,12 @@ void main() {
     expect(find.text('Play'), findsOneWidget);
   });
 
-  testWidgets('bottom nav shows three tabs', (tester) async {
+  testWidgets('bottom nav shows four tabs', (tester) async {
     await tester.pumpWidget(_buildTestApp());
     expect(find.text('Notes'), findsOneWidget);
     expect(find.text('Metronome'), findsOneWidget);
     expect(find.text('Polyrhythms'), findsOneWidget);
+    expect(find.text('Log'), findsOneWidget);
   });
 
   testWidgets('can navigate to Metronome tab', (tester) async {

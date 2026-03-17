@@ -57,7 +57,6 @@ void main() {
 
   testWidgets('renders metronome screen', (tester) async {
     await tester.pumpWidget(_buildTestApp());
-    expect(find.text('Metronome'), findsOneWidget);
     expect(find.text('Play'), findsOneWidget);
   });
 

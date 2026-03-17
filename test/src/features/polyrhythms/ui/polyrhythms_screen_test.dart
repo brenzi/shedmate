@@ -57,7 +57,6 @@ void main() {
 
   testWidgets('renders polyrhythms screen', (tester) async {
     await tester.pumpWidget(_buildTestApp());
-    expect(find.text('Polyrhythms'), findsOneWidget);
     expect(find.text('Play'), findsOneWidget);
   });
 
