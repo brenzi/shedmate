@@ -35,8 +35,10 @@ class _PolyrhythmLedsState extends ConsumerState<PolyrhythmLeds>
     final a = ref.read(polyrhythmProvider.select((s) => s.a));
     final bpm = ref.read(polyrhythmProvider.select((s) => s.bpm));
     final cycleDurationMs = a * 60000.0 / bpm;
-    final pos =
-        (_stopwatch.elapsedMilliseconds % cycleDurationMs) / cycleDurationMs;
+    const audioLatencyMs = 200;
+    final elapsed = (_stopwatch.elapsedMilliseconds - audioLatencyMs)
+        .clamp(0, double.maxFinite.toInt());
+    final pos = (elapsed % cycleDurationMs) / cycleDurationMs;
     if ((pos - _barPosition).abs() > 0.001) {
       setState(() => _barPosition = pos);
     }

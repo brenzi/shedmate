@@ -36,8 +36,10 @@ class _BeatPatternEditorState extends ConsumerState<BeatPatternEditor>
       metronomeProvider.select((s) => s.beatsPerBar),
     );
     final barDurationMs = beatsPerBar * 60000.0 / bpm;
-    final pos =
-        (_stopwatch.elapsedMilliseconds % barDurationMs) / barDurationMs;
+    const audioLatencyMs = 200;
+    final elapsed = (_stopwatch.elapsedMilliseconds - audioLatencyMs)
+        .clamp(0, double.maxFinite.toInt());
+    final pos = (elapsed % barDurationMs) / barDurationMs;
     if ((pos - _barPosition).abs() > 0.001) {
       setState(() => _barPosition = pos);
     }
