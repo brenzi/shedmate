@@ -5,6 +5,7 @@ class MetronomeState {
     this.beatToggles = const [true, true, true, true],
     this.offbeatToggles = const [false, false, false, false],
     this.accentBeat1 = true,
+    this.countIn = true,
     this.barsPerSection = 0,
     this.isPlaying = false,
     this.currentBeat = 0,
@@ -16,6 +17,7 @@ class MetronomeState {
   final List<bool> beatToggles;
   final List<bool> offbeatToggles;
   final bool accentBeat1;
+  final bool countIn;
   final int barsPerSection; // 0 = disabled
   final bool isPlaying;
   final int currentBeat;
@@ -27,6 +29,7 @@ class MetronomeState {
     'beatToggles': beatToggles,
     'offbeatToggles': offbeatToggles,
     'accentBeat1': accentBeat1,
+    'countIn': countIn,
     'barsPerSection': barsPerSection,
   };
 
@@ -43,6 +46,7 @@ class MetronomeState {
           (j['offbeatToggles'] as List<dynamic>?)?.cast<bool>() ??
           List.filled(beatsPerBar, false),
       accentBeat1: j['accentBeat1'] as bool? ?? d.accentBeat1,
+      countIn: j['countIn'] as bool? ?? d.countIn,
       barsPerSection: j['barsPerSection'] as int? ?? d.barsPerSection,
     );
   }
@@ -53,6 +57,7 @@ class MetronomeState {
     List<bool>? beatToggles,
     List<bool>? offbeatToggles,
     bool? accentBeat1,
+    bool? countIn,
     int? barsPerSection,
     bool? isPlaying,
     int? currentBeat,
@@ -64,6 +69,7 @@ class MetronomeState {
       beatToggles: beatToggles ?? this.beatToggles,
       offbeatToggles: offbeatToggles ?? this.offbeatToggles,
       accentBeat1: accentBeat1 ?? this.accentBeat1,
+      countIn: countIn ?? this.countIn,
       barsPerSection: barsPerSection ?? this.barsPerSection,
       isPlaying: isPlaying ?? this.isPlaying,
       currentBeat: currentBeat ?? this.currentBeat,

@@ -39,6 +39,9 @@ class TransportControls extends ConsumerWidget {
             onPressed: () => notifier.togglePlay(),
             icon: Icon(isPlaying ? Icons.stop : Icons.play_arrow),
             label: Text(isPlaying ? 'Stop' : 'Play'),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(150, 60),
+            ),
           ),
         ],
       ),

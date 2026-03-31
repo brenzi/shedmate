@@ -120,6 +120,13 @@ class MetronomeNotifier extends Notifier<MetronomeState> {
     _save();
   }
 
+  void toggleCountIn() {
+    final value = !state.countIn;
+    state = state.copyWith(countIn: value);
+    _sequencer.countIn = value;
+    _save();
+  }
+
   void setBarsPerSection(int value) {
     state = state.copyWith(barsPerSection: value);
     _sequencer.barsPerSection = value;
@@ -134,6 +141,7 @@ class MetronomeNotifier extends Notifier<MetronomeState> {
       ..beatToggles = List<bool>.from(state.beatToggles)
       ..offbeatToggles = List<bool>.from(state.offbeatToggles)
       ..accentBeat1 = state.accentBeat1
+      ..countIn = state.countIn
       ..barsPerSection = state.barsPerSection;
     _syncMixerParams(mixer);
   }

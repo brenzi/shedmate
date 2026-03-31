@@ -71,9 +71,10 @@ void main() {
     expect(find.text('Beats'), findsOneWidget);
   });
 
-  testWidgets('shows accent and section controls', (tester) async {
+  testWidgets('shows accent, count-in, and section controls', (tester) async {
     await tester.pumpWidget(_buildTestApp());
     expect(find.text('Accent 1'), findsOneWidget);
+    expect(find.text('Count In'), findsOneWidget);
     expect(find.text('Section'), findsOneWidget);
     expect(find.text('0'), findsOneWidget); // section count
   });

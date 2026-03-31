@@ -11,6 +11,7 @@ void main() {
   setUp(() {
     mockAudio = MockAudioService();
     sequencer = MetronomeSequencerService(audioService: mockAudio);
+    sequencer.countIn = false;
   });
 
   // Sounds now go through scheduleSound
@@ -200,6 +201,76 @@ void main() {
       expect(soundChannels()[0], 2);
       expect(soundKeys()[1], ClickSound.regular);
       expect(soundKeys()[2], ClickSound.accent);
+    });
+  });
+
+  group('count-in', () {
+    test('count-in plays all beats with accent on beat 1', () async {
+      sequencer.countIn = true;
+      sequencer.bpm = 600; // 100ms per beat
+      sequencer.beatsPerBar = 2;
+      sequencer.beatToggles = [false, false]; // beats off — ignored by count-in
+      mockAudio.currentTick = 0;
+
+      await sequencer.start();
+      await sequencer.stop();
+
+      // 200ms lookahead: count-in beat 0 (accent) at 0, beat 1 at 100,
+      // then normal pattern beat 0 at 200 — but beatToggles[0] is off so no
+      // sound at 200
+      expect(soundTicks(), equals([0, 100]));
+      expect(soundKeys()[0], ClickSound.accent); // accent on beat 1
+      expect(soundKeys()[1], ClickSound.regular);
+    });
+
+    test('count-in precedes normal pattern', () async {
+      sequencer.countIn = true;
+      sequencer.bpm = 600; // 100ms per beat
+      sequencer.beatsPerBar = 2;
+      sequencer.beatToggles = [true, true];
+      sequencer.accentBeat1 = true;
+      mockAudio.currentTick = 0;
+
+      await sequencer.start();
+      await sequencer.stop();
+
+      // count-in: accent@0, regular@100; normal: accent@200
+      expect(soundTicks(), equals([0, 100, 200]));
+      expect(soundKeys(), equals([
+        ClickSound.accent,
+        ClickSound.regular,
+        ClickSound.accent,
+      ]));
+    });
+
+    test('no count-in when disabled', () async {
+      sequencer.countIn = false;
+      sequencer.bpm = 600;
+      sequencer.beatsPerBar = 2;
+      sequencer.beatToggles = [true, true];
+      sequencer.accentBeat1 = true;
+      mockAudio.currentTick = 0;
+
+      await sequencer.start();
+      await sequencer.stop();
+
+      // No count-in: accent@0, regular@100, accent@200
+      expect(soundTicks(), equals([0, 100, 200]));
+      expect(soundKeys()[0], ClickSound.accent);
+    });
+
+    test('count-in ignores offbeats', () async {
+      sequencer.countIn = true;
+      sequencer.bpm = 120; // 500ms per beat
+      sequencer.beatsPerBar = 1;
+      sequencer.offbeatToggles = [true];
+      mockAudio.currentTick = 0;
+
+      await sequencer.start();
+      await sequencer.stop();
+
+      // Count-in: accent@0 only, no offbeat during count-in
+      expect(soundTicks(), equals([0]));
     });
   });
 

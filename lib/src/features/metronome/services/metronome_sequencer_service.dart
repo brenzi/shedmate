@@ -13,6 +13,7 @@ class MetronomeSequencerService {
   List<bool> beatToggles = [true, true, true, true];
   List<bool> offbeatToggles = [false, false, false, false];
   bool accentBeat1 = true;
+  bool countIn = true;
   int barsPerSection = 0;
 
   // Mixer: beat sound
@@ -35,6 +36,7 @@ class MetronomeSequencerService {
   Timer? _timer;
   int _nextBeatIndex = 0;
   int _nextBeatTickMs = 0;
+  int _countInRemaining = 0;
   final _pendingBeats = <({int tick, int beat, int bar})>[];
 
   static const _timerIntervalMs = 50;
@@ -48,6 +50,7 @@ class MetronomeSequencerService {
     final currentTick = await audioService.getCurrentTick();
     _nextBeatTickMs = currentTick;
     _nextBeatIndex = 0;
+    _countInRemaining = countIn ? beatsPerBar : 0;
     _pendingBeats.clear();
     _timer = Timer.periodic(
       const Duration(milliseconds: _timerIntervalMs),
@@ -84,6 +87,34 @@ class MetronomeSequencerService {
     }
 
     while (_nextBeatTickMs <= horizon) {
+      if (_countInRemaining > 0) {
+        // Count-in: play all beats, accent on beat 1, no offbeats/sections
+        final countInBeat = beatsPerBar - _countInRemaining;
+        if (countInBeat == 0) {
+          await audioService.scheduleSound(
+            _nextBeatTickMs,
+            channel: barChannel,
+            key: barKey,
+            velocity: barVelocity,
+          );
+        } else {
+          await audioService.scheduleSound(
+            _nextBeatTickMs,
+            channel: beatChannel,
+            key: beatKey,
+            velocity: beatVelocity,
+          );
+        }
+        _pendingBeats.add((
+          tick: _nextBeatTickMs,
+          beat: countInBeat,
+          bar: 0,
+        ));
+        _countInRemaining--;
+        _nextBeatTickMs += _beatIntervalMs.round();
+        continue;
+      }
+
       final beatInBar = _nextBeatIndex % beatsPerBar;
       final barIndex = barsPerSection > 0
           ? (_nextBeatIndex ~/ beatsPerBar) % barsPerSection

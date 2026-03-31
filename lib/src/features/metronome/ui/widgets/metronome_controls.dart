@@ -14,6 +14,9 @@ class MetronomeControls extends ConsumerWidget {
     final accentBeat1 = ref.watch(
       metronomeProvider.select((s) => s.accentBeat1),
     );
+    final countIn = ref.watch(
+      metronomeProvider.select((s) => s.countIn),
+    );
     final barsPerSection = ref.watch(
       metronomeProvider.select((s) => s.barsPerSection),
     );
@@ -56,6 +59,16 @@ class MetronomeControls extends ConsumerWidget {
                   : OutlinedButton(
                       onPressed: notifier.toggleAccent,
                       child: const Text('Accent 1'),
+                    ),
+              const SizedBox(width: 8),
+              countIn
+                  ? FilledButton.tonal(
+                      onPressed: notifier.toggleCountIn,
+                      child: const Text('Count In'),
+                    )
+                  : OutlinedButton(
+                      onPressed: notifier.toggleCountIn,
+                      child: const Text('Count In'),
                     ),
               const SizedBox(width: 16),
               Text('Section', style: Theme.of(context).textTheme.titleMedium),

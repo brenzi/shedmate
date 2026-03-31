@@ -9,7 +9,7 @@ import 'widgets/metronome_controls.dart';
 class MetronomeScreen extends ConsumerWidget {
   const MetronomeScreen({super.key});
 
-  static const _fixedContentHeight = 260.0;
+  static const _fixedContentHeight = 280.0;
   static const _minWheelHeight = 150.0;
 
   @override
@@ -60,6 +60,9 @@ class MetronomeScreen extends ConsumerWidget {
                     onPressed: () => notifier.togglePlay(),
                     icon: Icon(isPlaying ? Icons.stop : Icons.play_arrow),
                     label: Text(isPlaying ? 'Stop' : 'Play'),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(150, 60),
+                    ),
                   ),
                 ],
               ),
