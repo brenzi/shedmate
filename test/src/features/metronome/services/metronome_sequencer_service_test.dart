@@ -290,8 +290,8 @@ void main() {
 
       await sequencer.start();
 
-      // Advance time past all scheduled beats so stop() flushes them
-      mockAudio.currentTick = 200;
+      // Advance time past all delayed callbacks (200ms callback delay)
+      mockAudio.currentTick = 400;
       await sequencer.stop();
 
       // 3 beats in 200ms lookahead at 100ms interval

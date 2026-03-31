@@ -41,6 +41,7 @@ class MetronomeSequencerService {
 
   static const _timerIntervalMs = 50;
   static const _lookaheadMs = 200;
+  static const _callbackDelayMs = 180;
 
   bool get isPlaying => _timer != null;
 
@@ -106,7 +107,7 @@ class MetronomeSequencerService {
           );
         }
         _pendingBeats.add((
-          tick: _nextBeatTickMs,
+          tick: _nextBeatTickMs + _callbackDelayMs,
           beat: countInBeat,
           bar: 0,
         ));
@@ -161,7 +162,7 @@ class MetronomeSequencerService {
       }
 
       _pendingBeats.add((
-        tick: _nextBeatTickMs,
+        tick: _nextBeatTickMs + _callbackDelayMs,
         beat: beatInBar,
         bar: barIndex,
       ));
