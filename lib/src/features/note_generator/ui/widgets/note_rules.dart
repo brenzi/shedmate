@@ -64,6 +64,9 @@ class NoteRules extends ConsumerWidget {
     final scaleType = ref.watch(
       noteGeneratorProvider.select((s) => s.scaleType),
     );
+    final bassPitchClass = ref.watch(
+      noteGeneratorProvider.select((s) => s.bassPitchClass),
+    );
     final semitones = ref.watch(
       noteGeneratorProvider.select((s) => s.transposition.semitones),
     );
@@ -134,6 +137,44 @@ class NoteRules extends ConsumerWidget {
                   onChanged: (s) => notifier.setScale(rootPitchClass, s),
                 ),
               ],
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Text('Bass', style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(width: 8),
+              DropdownButton<int?>(
+                value: bassPitchClass,
+                isDense: true,
+                items: [
+                  const DropdownMenuItem(
+                    value: null,
+                    child: Text('no bass'),
+                  ),
+                  const DropdownMenuItem(
+                    value: -1,
+                    child: Text('random'),
+                  ),
+                  for (final pc in () {
+                    if (rootPitchClass != null && scaleType != null) {
+                      return scalePitchClasses(rootPitchClass, scaleType)
+                          .toList()
+                        ..sort();
+                    }
+                    return List.generate(12, (i) => i);
+                  }())
+                    DropdownMenuItem(
+                      value: pc,
+                      child: Text(
+                        _noteNames[(pc + semitones + 12) % 12],
+                      ),
+                    ),
+                ],
+                onChanged: (v) => notifier.setBassPitchClass(v),
+              ),
             ],
           ),
         ),

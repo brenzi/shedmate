@@ -13,8 +13,9 @@ const _noteNames = [
   'B',
 ];
 
-String midiNoteToName(int midiNote) {
+String midiNoteToName(int midiNote, {bool includeOctave = true}) {
   final name = _noteNames[midiNote % 12];
+  if (!includeOctave) return name;
   final octave = (midiNote ~/ 12) - 1;
   return '$name$octave';
 }

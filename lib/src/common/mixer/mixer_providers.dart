@@ -12,6 +12,7 @@ final mixerProvider = NotifierProvider<MixerNotifier, MixerState>(
 
 enum MixerTrack {
   noteGenPiano,
+  noteGenBass,
   noteGenClick,
   metronomeBeat,
   metronomeBar,
@@ -50,6 +51,7 @@ class MixerNotifier extends Notifier<MixerState> {
     final v = value.clamp(0.0, 1.0);
     state = switch (track) {
       MixerTrack.noteGenPiano => state.copyWith(noteGenPianoVolume: v),
+      MixerTrack.noteGenBass => state.copyWith(noteGenBassVolume: v),
       MixerTrack.noteGenClick => state.copyWith(
         noteGenClick: state.noteGenClick.copyWith(volume: v),
       ),
@@ -78,6 +80,7 @@ class MixerNotifier extends Notifier<MixerState> {
   void setSound(MixerTrack track, int soundIndex) {
     state = switch (track) {
       MixerTrack.noteGenPiano => state, // piano has no sound choice
+      MixerTrack.noteGenBass => state, // bass has no sound choice
       MixerTrack.noteGenClick => state.copyWith(
         noteGenClick: state.noteGenClick.copyWith(soundIndex: soundIndex),
       ),

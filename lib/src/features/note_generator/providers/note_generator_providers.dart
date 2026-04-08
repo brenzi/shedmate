@@ -26,12 +26,14 @@ class NoteGeneratorState {
     this.metronomeEnabled = true,
     this.isPlaying = false,
     this.currentNoteName = '---',
+    this.currentBassNoteName,
     this.currentMidiNote,
     this.currentBeat = 0,
     this.minInterval = 1,
     this.maxInterval = 12,
     this.rootPitchClass,
     this.scaleType,
+    this.bassPitchClass,
     this.transposition = Transposition.concert,
   });
 
@@ -43,12 +45,14 @@ class NoteGeneratorState {
   final bool metronomeEnabled;
   final bool isPlaying;
   final String currentNoteName;
+  final String? currentBassNoteName;
   final int? currentMidiNote;
   final int currentBeat;
   final int minInterval;
   final int maxInterval;
   final int? rootPitchClass;
   final ScaleType? scaleType;
+  final int? bassPitchClass;
   final Transposition transposition;
 
   Map<String, dynamic> toJson() => {
@@ -62,6 +66,7 @@ class NoteGeneratorState {
     'maxInterval': maxInterval,
     'rootPitchClass': rootPitchClass,
     'scaleType': scaleType?.name,
+    'bassPitchClass': bassPitchClass,
     'transposition': transposition.name,
   };
 
@@ -80,6 +85,7 @@ class NoteGeneratorState {
       scaleType: j['scaleType'] != null
           ? ScaleType.values.byName(j['scaleType'] as String)
           : null,
+      bassPitchClass: j['bassPitchClass'] as int?,
       transposition: j['transposition'] != null
           ? Transposition.values.byName(j['transposition'] as String)
           : d.transposition,
@@ -95,12 +101,14 @@ class NoteGeneratorState {
     bool? metronomeEnabled,
     bool? isPlaying,
     String? currentNoteName,
+    Object? currentBassNoteName = _sentinel,
     Object? currentMidiNote = _sentinel,
     int? currentBeat,
     int? minInterval,
     int? maxInterval,
     Object? rootPitchClass = _sentinel,
     Object? scaleType = _sentinel,
+    Object? bassPitchClass = _sentinel,
     Transposition? transposition,
   }) {
     return NoteGeneratorState(
@@ -112,6 +120,9 @@ class NoteGeneratorState {
       metronomeEnabled: metronomeEnabled ?? this.metronomeEnabled,
       isPlaying: isPlaying ?? this.isPlaying,
       currentNoteName: currentNoteName ?? this.currentNoteName,
+      currentBassNoteName: currentBassNoteName == _sentinel
+          ? this.currentBassNoteName
+          : currentBassNoteName as String?,
       currentMidiNote: currentMidiNote == _sentinel
           ? this.currentMidiNote
           : currentMidiNote as int?,
@@ -124,6 +135,9 @@ class NoteGeneratorState {
       scaleType: scaleType == _sentinel
           ? this.scaleType
           : scaleType as ScaleType?,
+      bassPitchClass: bassPitchClass == _sentinel
+          ? this.bassPitchClass
+          : bassPitchClass as int?,
       transposition: transposition ?? this.transposition,
     );
   }
@@ -148,6 +162,7 @@ class NoteGeneratorNotifier extends Notifier<NoteGeneratorState> {
     _prefs = ref.read(sharedPrefsProvider);
     _sequencer = SequencerService(audioService: _audioService);
     _sequencer.onNewNote = _onNewNote;
+    _sequencer.onBassNote = _onBassNote;
     _sequencer.onBeat = _onBeat;
     ref.listen(mixerProvider, (_, mixer) => _syncMixerParams(mixer));
     ref.onDispose(_dispose);
@@ -181,6 +196,14 @@ class NoteGeneratorNotifier extends Notifier<NoteGeneratorState> {
     );
   }
 
+  void _onBassNote(int? bassMidiNote) {
+    final name = bassMidiNote != null
+        ? midiNoteToName(bassMidiNote + state.transposition.semitones,
+            includeOctave: false)
+        : null;
+    state = state.copyWith(currentBassNoteName: name);
+  }
+
   void _onBeat(int beat) {
     state = state.copyWith(currentBeat: beat);
   }
@@ -206,6 +229,7 @@ class NoteGeneratorNotifier extends Notifier<NoteGeneratorState> {
     state = state.copyWith(
       isPlaying: false,
       currentNoteName: '---',
+      currentBassNoteName: null,
       currentMidiNote: null,
       currentBeat: 0,
     );
@@ -263,12 +287,28 @@ class NoteGeneratorNotifier extends Notifier<NoteGeneratorState> {
   }
 
   void setScale(int? rootPitchClass, ScaleType? scaleType) {
+    // Clear bass if scale is removed or bass note is no longer in the new scale.
+    var bass = state.bassPitchClass;
+    if (rootPitchClass == null || scaleType == null) {
+      bass = null;
+    } else if (bass != null && bass != -1) {
+      final pitchClasses = scalePitchClasses(rootPitchClass, scaleType);
+      if (!pitchClasses.contains(bass)) bass = null;
+    }
     state = state.copyWith(
       rootPitchClass: rootPitchClass,
       scaleType: scaleType,
+      bassPitchClass: bass,
     );
     _sequencer.rootPitchClass = rootPitchClass;
     _sequencer.scaleType = scaleType;
+    _sequencer.bassPitchClass = bass;
+    _save();
+  }
+
+  void setBassPitchClass(int? pitchClass) {
+    state = state.copyWith(bassPitchClass: pitchClass);
+    _sequencer.bassPitchClass = pitchClass;
     _save();
   }
 
@@ -284,13 +324,15 @@ class NoteGeneratorNotifier extends Notifier<NoteGeneratorState> {
       ..minInterval = state.minInterval
       ..maxInterval = state.maxInterval
       ..rootPitchClass = state.rootPitchClass
-      ..scaleType = state.scaleType;
+      ..scaleType = state.scaleType
+      ..bassPitchClass = state.bassPitchClass;
     _syncMixerParams(mixer);
   }
 
   void _syncMixerParams(MixerState mixer) {
     _sequencer
       ..pianoVelocity = (mixer.noteGenPianoVolume * 127).round().clamp(0, 127)
+      ..bassVelocity = (mixer.noteGenBassVolume * 127).round().clamp(0, 127)
       ..clickChannel = mixer.noteGenClick.channel
       ..clickKey = mixer.noteGenClick.key
       ..clickVelocity = mixer.noteGenClick.velocity;

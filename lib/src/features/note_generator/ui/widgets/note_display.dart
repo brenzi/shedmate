@@ -21,6 +21,9 @@ class NoteDisplay extends ConsumerWidget {
     final isPlaying = ref.watch(
       noteGeneratorProvider.select((s) => s.isPlaying),
     );
+    final bassNoteName = ref.watch(
+      noteGeneratorProvider.select((s) => s.currentBassNoteName),
+    );
     final transposition = ref.watch(
       noteGeneratorProvider.select((s) => s.transposition),
     );
@@ -30,7 +33,8 @@ class NoteDisplay extends ConsumerWidget {
         const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
           children: [
             DropdownButton<Transposition>(
               value: transposition,
@@ -54,6 +58,15 @@ class NoteDisplay extends ConsumerWidget {
                 letterSpacing: 2,
               ),
             ),
+            if (bassNoteName != null) ...[
+              const SizedBox(width: 4),
+              Text(
+                '/$bassNoteName',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
           ],
         ),
         const SizedBox(height: 8),

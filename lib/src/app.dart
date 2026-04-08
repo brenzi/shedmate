@@ -52,9 +52,11 @@ class _AppState extends ConsumerState<App> {
           ),
           actions: [
             if (_currentIndex < 3)
-              IconButton(
-                icon: const Icon(Icons.tune),
-                onPressed: () => showMixerSheet(context),
+              Builder(
+                builder: (navContext) => IconButton(
+                  icon: const Icon(Icons.tune),
+                  onPressed: () => showMixerSheet(navContext),
+                ),
               ),
           ],
         ),

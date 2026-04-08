@@ -21,9 +21,13 @@ class SequencerService {
   int maxInterval = 12;
   int? rootPitchClass;
   ScaleType? scaleType;
+  int? bassPitchClass;
 
   // Mixer: piano
   int pianoVelocity = 100;
+
+  // Mixer: bass
+  int bassVelocity = 100;
 
   // Mixer: click sound
   int clickChannel = 1;
@@ -32,6 +36,7 @@ class SequencerService {
 
   // Callbacks for UI
   void Function(int midiNote)? onNewNote;
+  void Function(int? bassMidiNote)? onBassNote;
   void Function(int beatInMeasure)? onBeat;
 
   // Internal state
@@ -87,7 +92,14 @@ class SequencerService {
       }
 
       if (beatInMeasure == 0 && pianoEnabled) {
-        final note = _randomNote();
+        // Resolve bass pitch class first so _randomNote can avoid it.
+        final bass = bassPitchClass;
+        final bassPc = bass == null
+            ? null
+            : bass == -1
+                ? _randomBassPitchClass()
+                : bass;
+        final note = _randomNote(excludePitchClass: bassPc);
         final duration = (_beatIntervalMs * beatsPerNote - _noteReleaseGapMs)
             .round();
         await audioService.scheduleNote(
@@ -96,6 +108,20 @@ class SequencerService {
           duration,
           velocity: pianoVelocity,
         );
+        if (bassPc != null) {
+          // Bass in low register; SF2 range starts at E2 (MIDI 40).
+          var bassMidi = 36 + bassPc;
+          if (bassMidi < 40) bassMidi += 12;
+          await audioService.scheduleBassNote(
+            _nextBeatTickMs,
+            bassMidi,
+            duration,
+            velocity: bassVelocity,
+          );
+          onBassNote?.call(bassMidi);
+        } else {
+          onBassNote?.call(null);
+        }
         onNewNote?.call(note);
       }
 
@@ -106,7 +132,7 @@ class SequencerService {
     }
   }
 
-  int _randomNote() {
+  int _randomNote({int? excludePitchClass}) {
     var candidates = List.generate(
       rangeHigh - rangeLow + 1,
       (i) => rangeLow + i,
@@ -119,6 +145,13 @@ class SequencerService {
       candidates = candidates
           .where((n) => pitchClasses.contains(n % 12))
           .toList();
+    }
+
+    if (excludePitchClass != null) {
+      final filtered = candidates
+          .where((n) => n % 12 != excludePitchClass)
+          .toList();
+      if (filtered.isNotEmpty) candidates = filtered;
     }
 
     final prev = _previousNote;
@@ -138,6 +171,16 @@ class SequencerService {
     _noteHistory.add(note);
     if (_noteHistory.length > _historySize) _noteHistory.removeAt(0);
     return note;
+  }
+
+  int _randomBassPitchClass() {
+    final root = rootPitchClass;
+    final scale = scaleType;
+    if (root != null && scale != null) {
+      final pcs = scalePitchClasses(root, scale).toList();
+      return pcs[_random.nextInt(pcs.length)];
+    }
+    return _random.nextInt(12);
   }
 
   /// Weighted random selection: recently played notes are less likely.

@@ -7,10 +7,12 @@ class AudioService {
   late int _sfId;
   late int _clickFluidSfId;
   late int _drumsFluidSfId;
+  late int _bassFluidSfId;
 
   static const _pianoChannel = 0;
   static const _clickChannel = 1;
   static const _drumsChannel = 2;
+  static const _bassChannel = 3;
   static const _clickDurationMs = 50;
 
   Future<void> init() async {
@@ -44,6 +46,19 @@ class AudioService {
       program: 0,
     );
 
+    _bassFluidSfId = await _midi.loadSoundfontAssetIntoSynth(
+      existingSfId: _sfId,
+      assetPath: 'assets/sf2/bass_pizzicato.sf2',
+    );
+
+    await _midi.selectInstrumentBySfontId(
+      sfId: _sfId,
+      channel: _bassChannel,
+      fluidSfontId: _bassFluidSfId,
+      bank: 0,
+      program: 44,
+    );
+
     await _midi.createSequencer(sfId: _sfId);
   }
 
@@ -66,6 +81,27 @@ class AudioService {
       sfId: _sfId,
       tick: tick + durationMs,
       channel: _pianoChannel,
+      key: midiNote,
+    );
+  }
+
+  Future<void> scheduleBassNote(
+    int tick,
+    int midiNote,
+    int durationMs, {
+    int velocity = 100,
+  }) async {
+    await _midi.scheduleNoteOn(
+      sfId: _sfId,
+      tick: tick,
+      channel: _bassChannel,
+      key: midiNote,
+      velocity: velocity,
+    );
+    await _midi.scheduleNoteOff(
+      sfId: _sfId,
+      tick: tick + durationMs,
+      channel: _bassChannel,
       key: midiNote,
     );
   }

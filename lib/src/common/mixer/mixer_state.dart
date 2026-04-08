@@ -31,6 +31,7 @@ class TrackConfig {
 class MixerState {
   const MixerState({
     this.noteGenPianoVolume = 0.95,
+    this.noteGenBassVolume = 0.79,
     this.noteGenClick = _defaultClick,
     this.metronomeBeat = _defaultBeat,
     this.metronomeBar = _defaultBar,
@@ -42,6 +43,7 @@ class MixerState {
 
   // Note Generator
   final double noteGenPianoVolume; // piano has no sound choice
+  final double noteGenBassVolume; // bass uses piano soundfont, volume only
   final TrackConfig noteGenClick;
 
   // Metronome
@@ -100,6 +102,7 @@ class MixerState {
 
   Map<String, dynamic> toJson() => {
     'noteGenPianoVolume': noteGenPianoVolume,
+    'noteGenBassVolume': noteGenBassVolume,
     'noteGenClick': noteGenClick.toJson(),
     'metronomeBeat': metronomeBeat.toJson(),
     'metronomeBar': metronomeBar.toJson(),
@@ -114,6 +117,8 @@ class MixerState {
     return MixerState(
       noteGenPianoVolume:
           (j['noteGenPianoVolume'] as num?)?.toDouble() ?? d.noteGenPianoVolume,
+      noteGenBassVolume:
+          (j['noteGenBassVolume'] as num?)?.toDouble() ?? d.noteGenBassVolume,
       noteGenClick: j['noteGenClick'] is Map<String, dynamic>
           ? TrackConfig.fromJson(
               j['noteGenClick'] as Map<String, dynamic>,
@@ -155,6 +160,7 @@ class MixerState {
 
   MixerState copyWith({
     double? noteGenPianoVolume,
+    double? noteGenBassVolume,
     TrackConfig? noteGenClick,
     TrackConfig? metronomeBeat,
     TrackConfig? metronomeBar,
@@ -165,6 +171,7 @@ class MixerState {
   }) {
     return MixerState(
       noteGenPianoVolume: noteGenPianoVolume ?? this.noteGenPianoVolume,
+      noteGenBassVolume: noteGenBassVolume ?? this.noteGenBassVolume,
       noteGenClick: noteGenClick ?? this.noteGenClick,
       metronomeBeat: metronomeBeat ?? this.metronomeBeat,
       metronomeBar: metronomeBar ?? this.metronomeBar,

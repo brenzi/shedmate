@@ -71,6 +71,13 @@ class _MixerSheetContent extends ConsumerWidget {
       onSoundChanged: null,
     ),
     _StripConfig(
+      label: 'Bass',
+      volume: m.noteGenBassVolume,
+      onVolumeChanged: (v) => n.setVolume(MixerTrack.noteGenBass, v),
+      soundIndex: null, // bass uses piano soundfont, no sound choice
+      onSoundChanged: null,
+    ),
+    _StripConfig(
       label: 'Click',
       volume: m.noteGenClick.volume,
       onVolumeChanged: (v) => n.setVolume(MixerTrack.noteGenClick, v),
