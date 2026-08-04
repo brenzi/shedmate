@@ -251,5 +251,41 @@ void main() {
 
       expect(mockAudio.scheduledNotes, isNotEmpty);
     });
+
+    test('octaves are suppressed in scale mode', () async {
+      // At 60000 BPM one _tick() schedules ~200 notes sharing continuous
+      // history, so consecutive notes form one real melodic walk.
+      sequencer.bpm = 60000;
+      sequencer.beatsPerNote = 1;
+      sequencer.metronomeEnabled = false;
+      sequencer.rangeLow = 21;
+      sequencer.rangeHigh = 108;
+      sequencer.minInterval = 1;
+      sequencer.maxInterval = 12;
+      sequencer.rootPitchClass = 0; // C
+      sequencer.scaleType = ScaleType.major;
+
+      final intervals = <int, int>{};
+      for (var run = 0; run < 60; run++) {
+        mockAudio.scheduledNotes.clear();
+        mockAudio.currentTick = 0;
+        await sequencer.start();
+        await sequencer.stop();
+        final notes = mockAudio.scheduledNotes.map((n) => n.midiNote).toList();
+        for (var i = 1; i < notes.length; i++) {
+          intervals.update((notes[i] - notes[i - 1]).abs(), (v) => v + 1,
+              ifAbsent: () => 1);
+        }
+      }
+
+      final total = intervals.values.fold(0, (a, b) => a + b);
+      final octaveShare = (intervals[12] ?? 0) / total;
+      // Before mitigation the octave was ~14% — the single most common
+      // interval. Soft suppression should push it well below a uniform 8.3%.
+      expect(octaveShare, lessThan(0.05),
+          reason: 'octave share ${(octaveShare * 100).toStringAsFixed(1)}%');
+      // Still occasionally possible, not hard-banned.
+      expect(intervals[12] ?? 0, greaterThan(0));
+    });
   });
 }

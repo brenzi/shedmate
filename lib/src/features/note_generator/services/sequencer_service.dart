@@ -48,6 +48,13 @@ class SequencerService {
 
   static const _historySize = 12;
 
+  // Octaves/unisons repeat the previous note's pitch class — musically the
+  // least interesting interval, and structurally over-represented in scale mode
+  // (the octave is the only interval reachable in-scale from every degree in
+  // both directions). Scale their selection weight down so they stay rare but
+  // possible rather than dominating.
+  static const _octaveWeightFactor = 0.15;
+
   static const _timerIntervalMs = 50;
   static const _lookaheadMs = 200;
   static const _noteReleaseGapMs = 50;
@@ -166,7 +173,7 @@ class SequencerService {
       candidates = List.generate(rangeHigh - rangeLow + 1, (i) => rangeLow + i);
     }
 
-    final note = _weightedPick(candidates);
+    final note = _weightedPick(candidates, prev);
     _previousNote = note;
     _noteHistory.add(note);
     if (_noteHistory.length > _historySize) _noteHistory.removeAt(0);
@@ -185,15 +192,20 @@ class SequencerService {
 
   /// Weighted random selection: recently played notes are less likely.
   /// Most recent in history gets weight 0, oldest gets 1.0,
-  /// notes not in history get 1.0.
-  int _weightedPick(List<int> candidates) {
+  /// notes not in history get 1.0. Candidates that repeat [prev]'s pitch class
+  /// (octaves/unisons) are additionally scaled by [_octaveWeightFactor].
+  int _weightedPick(List<int> candidates, int? prev) {
     if (candidates.length == 1) return candidates.first;
 
+    final prevPitchClass = prev == null ? null : prev % 12;
     final weights = candidates.map((note) {
       final i = _noteHistory.lastIndexOf(note);
-      if (i == -1) return 1.0;
-      final recency = _noteHistory.length - i; // 1 = most recent
-      return (recency - 1) / (_historySize - 1);
+      final recency = i == -1 ? _historySize : _noteHistory.length - i;
+      var weight = (recency - 1) / (_historySize - 1);
+      if (prevPitchClass != null && note % 12 == prevPitchClass) {
+        weight *= _octaveWeightFactor;
+      }
+      return weight;
     }).toList();
 
     final total = weights.fold(0.0, (s, w) => s + w);
