@@ -1,7 +1,7 @@
 name: shedmate
 description: "Jazz practice tools for musicians"
 publish_to: 'none'
-version: 0.3.1+1
+version: 0.3.2+1
 
 environment:
   sdk: ^3.10.4
@@ -14,6 +14,7 @@ dependencies:
     git:
       url: https://github.com/brenzi/flutter_midi_pro.git
       ref: ab/expose-realtime-note-injection
+  package_info_plus: ^8.1.2
   shared_preferences: ^2.5.4
   wakelock_plus: ^1.2.8
 

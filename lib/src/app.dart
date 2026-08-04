@@ -9,7 +9,8 @@ import 'common/providers.dart';
 import 'features/metronome/ui/metronome_screen.dart';
 import 'features/note_generator/ui/note_generator_screen.dart';
 import 'features/polyrhythms/ui/polyrhythms_screen.dart';
-import 'features/practice_log/ui/practice_log_screen.dart';
+import 'features/practice_log/ui/practice_log_screen.dart'
+    show PracticeLogScreen, PracticeLogVersion;
 
 const _tabTitles = ['Note Generator', 'Metronome', 'Polyrhythms', 'Log'];
 
@@ -57,7 +58,9 @@ class _AppState extends ConsumerState<App> {
                   icon: const Icon(Icons.tune),
                   onPressed: () => showMixerSheet(navContext),
                 ),
-              ),
+              )
+            else
+              const PracticeLogVersion(),
           ],
         ),
         body: IndexedStack(

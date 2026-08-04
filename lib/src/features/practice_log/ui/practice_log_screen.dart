@@ -3,6 +3,29 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../common/practice_timer/practice_timer_notifier.dart';
 import '../../../common/practice_timer/practice_timer_state.dart';
+import '../../../common/providers.dart';
+
+class PracticeLogVersion extends ConsumerWidget {
+  const PracticeLogVersion({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final info = ref.watch(packageInfoProvider);
+    return info.when(
+      data: (i) => Padding(
+        padding: const EdgeInsets.only(right: 16),
+        child: Center(
+          child: Text(
+            'v${i.version} (${i.buildNumber})',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
+      ),
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
+    );
+  }
+}
 
 class PracticeLogScreen extends ConsumerWidget {
   const PracticeLogScreen({super.key});
