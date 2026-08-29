@@ -33,6 +33,8 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          # Pinned: screenshot rendering shifts between Flutter releases.
+          flutter-version: 3.44.1
 
       - name: Install dependencies
         run: flutter pub get
@@ -42,6 +44,13 @@ jobs:
 
       - name: Test
         run: flutter test
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: build/screenshots/
 
       - name: Build APK
         run: flutter build apk

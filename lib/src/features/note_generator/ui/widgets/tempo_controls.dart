@@ -42,6 +42,7 @@ class TempoControls extends ConsumerWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: SegmentedButton<int>(
+                  showSelectedIcon: false,
                   segments: _beatsPerNoteOptions
                       .map((v) => ButtonSegment(value: v, label: Text('$v')))
                       .toList(),

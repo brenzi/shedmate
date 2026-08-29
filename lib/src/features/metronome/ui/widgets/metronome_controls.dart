@@ -48,6 +48,7 @@ class MetronomeControls extends ConsumerWidget {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: SegmentedButton<int>(
+                        showSelectedIcon: false,
                         segments: List.generate(
                           11,
                           (i) => ButtonSegment(
@@ -67,46 +68,13 @@ class MetronomeControls extends ConsumerWidget {
               // Accent + Count In + Section controls
               Row(
                 children: [
-                  SizedBox(
-                    height: 40,
-                    child: accentBeat1
-                        ? FilledButton.tonal(
-                            onPressed: notifier.toggleAccent,
-                            child: Text(accentLabel),
-                          )
-                        : OutlinedButton(
-                            onPressed: notifier.toggleAccent,
-                            child: Text(accentLabel),
-                          ),
-                  ),
+                  _toggle(accentBeat1, notifier.toggleAccent, accentLabel),
                   const SizedBox(width: 8),
-                  SizedBox(
-                    height: 40,
-                    child: countIn
-                        ? FilledButton.tonal(
-                            onPressed: notifier.toggleCountIn,
-                            child: Text(countInLabel),
-                          )
-                        : OutlinedButton(
-                            onPressed: notifier.toggleCountIn,
-                            child: Text(countInLabel),
-                          ),
-                  ),
-                  const SizedBox(width: 16),
-                  SizedBox(
-                    height: 40,
-                    child: sectionEnabled
-                        ? FilledButton.tonal(
-                            onPressed: notifier.toggleSection,
-                            child: Text(sectionLabel),
-                          )
-                        : OutlinedButton(
-                            onPressed: notifier.toggleSection,
-                            child: Text(sectionLabel),
-                          ),
-                  ),
+                  _toggle(countIn, notifier.toggleCountIn, countInLabel),
                   const SizedBox(width: 8),
+                  _toggle(sectionEnabled, notifier.toggleSection, sectionLabel),
                   IconButton(
+                    visualDensity: VisualDensity.compact,
                     onPressed: barsPerSection > 0
                         ? () => notifier.setBarsPerSection(barsPerSection - 1)
                         : null,
@@ -114,6 +82,7 @@ class MetronomeControls extends ConsumerWidget {
                   ),
                   Text('$barsPerSection'),
                   IconButton(
+                    visualDensity: VisualDensity.compact,
                     onPressed: barsPerSection < 32
                         ? () => notifier.setBarsPerSection(barsPerSection + 1)
                         : null,
@@ -125,6 +94,29 @@ class MetronomeControls extends ConsumerWidget {
           );
         },
       ),
+    );
+  }
+
+  /// Compact toggle button; the three of them plus the section stepper have to
+  /// fit one row on a 360dp phone.
+  Widget _toggle(bool on, VoidCallback onPressed, String label) {
+    const style = ButtonStyle(
+      visualDensity: VisualDensity.compact,
+      padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 12)),
+    );
+    return SizedBox(
+      height: 40,
+      child: on
+          ? FilledButton.tonal(
+              style: style,
+              onPressed: onPressed,
+              child: Text(label),
+            )
+          : OutlinedButton(
+              style: style,
+              onPressed: onPressed,
+              child: Text(label),
+            ),
     );
   }
 }
