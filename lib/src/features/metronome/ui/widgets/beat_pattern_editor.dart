@@ -51,6 +51,9 @@ class _BeatPatternEditorState extends ConsumerState<BeatPatternEditor>
     final barsPerSection = ref.watch(
       metronomeProvider.select((s) => s.barsPerSection),
     );
+    final sectionEnabled = ref.watch(
+      metronomeProvider.select((s) => s.sectionEnabled),
+    );
     final currentBar = ref.watch(metronomeProvider.select((s) => s.currentBar));
     final isPlaying = ref.watch(metronomeProvider.select((s) => s.isPlaying));
     final colorScheme = Theme.of(context).colorScheme;
@@ -135,15 +138,17 @@ class _BeatPatternEditorState extends ConsumerState<BeatPatternEditor>
                       ),
                   ],
                 ),
-              ),
-              if (barsPerSection > 0) ...[
-                const SizedBox(height: 12),
-                Text(
-                  'Bar ${currentBar + 1} / $barsPerSection',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ],
-            ],
+               ),
+               if (sectionEnabled && barsPerSection > 0) ...[
+                 const SizedBox(height: 12),
+                 Text(
+                   'Bar ${currentBar + 1} / $barsPerSection',
+                   style: Theme.of(context).textTheme.bodyMedium,
+                 ),
+               ] else ...[
+                 const SizedBox(height: 30),
+               ],
+             ],
           );
         },
       ),

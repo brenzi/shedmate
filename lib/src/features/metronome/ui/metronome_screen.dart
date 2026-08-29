@@ -36,37 +36,41 @@ class MetronomeScreen extends ConsumerWidget {
                 ),
               ),
             const Divider(height: 1),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 8,
-              ),
-              child: Row(
-                children: [
-                  if (!showInlineWheel)
-                    GestureDetector(
-                      onTap: () => showTempoWheel(
-                        context,
-                        currentBpm: bpm,
-                        onBpmChanged: notifier.setBpm,
-                      ),
-                      child: Text(
-                        '\u2669 = $bpm',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                    ),
-                  const Spacer(),
-                  FilledButton.icon(
-                    onPressed: () => notifier.togglePlay(),
-                    icon: Icon(isPlaying ? Icons.stop : Icons.play_arrow),
-                    label: Text(isPlaying ? 'Stop' : 'Play'),
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(150, 60),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+             Padding(
+               padding: const EdgeInsets.symmetric(
+                 horizontal: 16,
+                 vertical: 8,
+               ),
+               child: Row(
+                 children: [
+                   if (!showInlineWheel)
+                     GestureDetector(
+                       onTap: () => showTempoWheel(
+                         context,
+                         currentBpm: bpm,
+                         onBpmChanged: notifier.setBpm,
+                       ),
+                       child: Text(
+                         '\u2669 = $bpm',
+                         style: Theme.of(context).textTheme.titleLarge,
+                       ),
+                     ),
+                   const Spacer(),
+                   FilledButton.icon(
+                     onPressed: () => notifier.togglePlay(),
+                     icon: Icon(isPlaying ? Icons.stop : Icons.play_arrow),
+                     label: Text(isPlaying ? 'Stop' : 'Play'),
+                     style: FilledButton.styleFrom(
+                       minimumSize: const Size(180, 70),
+                       padding: const EdgeInsets.symmetric(horizontal: 24),
+                       shape: RoundedRectangleBorder(
+                         borderRadius: BorderRadius.circular(16),
+                       ),
+                     ),
+                   ),
+                 ],
+               ),
+             ),
           ],
         );
       },

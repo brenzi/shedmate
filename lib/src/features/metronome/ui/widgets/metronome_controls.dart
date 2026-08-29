@@ -20,6 +20,9 @@ class MetronomeControls extends ConsumerWidget {
     final barsPerSection = ref.watch(
       metronomeProvider.select((s) => s.barsPerSection),
     );
+    final sectionEnabled = ref.watch(
+      metronomeProvider.select((s) => s.sectionEnabled),
+    );
     final notifier = ref.read(metronomeProvider.notifier);
 
     return Padding(
@@ -64,29 +67,43 @@ class MetronomeControls extends ConsumerWidget {
               // Accent + Count In + Section controls
               Row(
                 children: [
-                  accentBeat1
-                      ? FilledButton.tonal(
-                          onPressed: notifier.toggleAccent,
-                          child: Text(accentLabel),
-                        )
-                      : OutlinedButton(
-                          onPressed: notifier.toggleAccent,
-                          child: Text(accentLabel),
-                        ),
+                  SizedBox(
+                    height: 40,
+                    child: accentBeat1
+                        ? FilledButton.tonal(
+                            onPressed: notifier.toggleAccent,
+                            child: Text(accentLabel),
+                          )
+                        : OutlinedButton(
+                            onPressed: notifier.toggleAccent,
+                            child: Text(accentLabel),
+                          ),
+                  ),
                   const SizedBox(width: 8),
-                  countIn
-                      ? FilledButton.tonal(
-                          onPressed: notifier.toggleCountIn,
-                          child: Text(countInLabel),
-                        )
-                      : OutlinedButton(
-                          onPressed: notifier.toggleCountIn,
-                          child: Text(countInLabel),
-                        ),
+                  SizedBox(
+                    height: 40,
+                    child: countIn
+                        ? FilledButton.tonal(
+                            onPressed: notifier.toggleCountIn,
+                            child: Text(countInLabel),
+                          )
+                        : OutlinedButton(
+                            onPressed: notifier.toggleCountIn,
+                            child: Text(countInLabel),
+                          ),
+                  ),
                   const SizedBox(width: 16),
-                  Text(
-                    sectionLabel,
-                    style: Theme.of(context).textTheme.titleMedium,
+                  SizedBox(
+                    height: 40,
+                    child: sectionEnabled
+                        ? FilledButton.tonal(
+                            onPressed: notifier.toggleSection,
+                            child: Text(sectionLabel),
+                          )
+                        : OutlinedButton(
+                            onPressed: notifier.toggleSection,
+                            child: Text(sectionLabel),
+                          ),
                   ),
                   const SizedBox(width: 8),
                   IconButton(

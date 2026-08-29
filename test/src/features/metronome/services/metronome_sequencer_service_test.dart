@@ -142,6 +142,7 @@ void main() {
       sequencer.bpm = 120;
       sequencer.beatsPerBar = 1; // 1 beat per bar
       sequencer.barsPerSection = 4;
+      sequencer.sectionEnabled = true;
       sequencer.accentBeat1 = true;
       mockAudio.currentTick = 0;
 
@@ -158,6 +159,7 @@ void main() {
       sequencer.bpm = 120;
       sequencer.beatsPerBar = 1;
       sequencer.barsPerSection = 4;
+      sequencer.sectionEnabled = true;
       sequencer.beatToggles = [false];
       mockAudio.currentTick = 0;
 
@@ -172,6 +174,7 @@ void main() {
       sequencer.bpm = 120;
       sequencer.beatsPerBar = 1;
       sequencer.barsPerSection = 4;
+      sequencer.sectionEnabled = true;
       sequencer.beatToggles = [true];
       mockAudio.currentTick = 0;
 
@@ -188,6 +191,7 @@ void main() {
       sequencer.bpm = 600; // 100ms per beat
       sequencer.beatsPerBar = 2;
       sequencer.barsPerSection = 2;
+      sequencer.sectionEnabled = true;
       sequencer.accentBeat1 = true;
       mockAudio.currentTick = 0;
 

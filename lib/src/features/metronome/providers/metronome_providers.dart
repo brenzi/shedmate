@@ -128,8 +128,23 @@ class MetronomeNotifier extends Notifier<MetronomeState> {
   }
 
   void setBarsPerSection(int value) {
-    state = state.copyWith(barsPerSection: value);
+    final enable = value > 0;
+    state = state.copyWith(barsPerSection: value, sectionEnabled: enable);
     _sequencer.barsPerSection = value;
+    _sequencer.sectionEnabled = enable;
+    if (enable) {
+      _sequencer.setSectionStart();
+    }
+    _save();
+  }
+
+  void toggleSection() {
+    final value = !state.sectionEnabled;
+    if (value && state.barsPerSection > 0) {
+      _sequencer.setSectionStart();
+    }
+    state = state.copyWith(sectionEnabled: value);
+    _sequencer.sectionEnabled = value;
     _save();
   }
 
@@ -142,7 +157,8 @@ class MetronomeNotifier extends Notifier<MetronomeState> {
       ..offbeatToggles = List<bool>.from(state.offbeatToggles)
       ..accentBeat1 = state.accentBeat1
       ..countIn = state.countIn
-      ..barsPerSection = state.barsPerSection;
+      ..barsPerSection = state.barsPerSection
+      ..sectionEnabled = state.sectionEnabled;
     _syncMixerParams(mixer);
   }
 

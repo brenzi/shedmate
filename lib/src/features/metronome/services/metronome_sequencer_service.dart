@@ -15,6 +15,7 @@ class MetronomeSequencerService {
   bool accentBeat1 = true;
   bool countIn = true;
   int barsPerSection = 0;
+  bool sectionEnabled = false;
 
   // Mixer: beat sound
   int beatChannel = 1;
@@ -38,6 +39,7 @@ class MetronomeSequencerService {
   int _nextBeatTickMs = 0;
   int _countInRemaining = 0;
   final _pendingBeats = <({int tick, int beat, int bar})>[];
+  int _sectionBarCounter = 0;
 
   static const _timerIntervalMs = 50;
   static const _lookaheadMs = 200;
@@ -45,12 +47,17 @@ class MetronomeSequencerService {
 
   bool get isPlaying => _timer != null;
 
+  void setSectionStart() {
+    _sectionBarCounter = barsPerSection - 1;
+  }
+
   double get _beatIntervalMs => 60000.0 / bpm;
 
   Future<void> start() async {
     final currentTick = await audioService.getCurrentTick();
     _nextBeatTickMs = currentTick;
     _nextBeatIndex = 0;
+    _sectionBarCounter = sectionEnabled ? -1 : 0;
     _countInRemaining = countIn ? beatsPerBar : 0;
     _pendingBeats.clear();
     _timer = Timer.periodic(
@@ -117,12 +124,20 @@ class MetronomeSequencerService {
       }
 
       final beatInBar = _nextBeatIndex % beatsPerBar;
-      final barIndex = barsPerSection > 0
-          ? (_nextBeatIndex ~/ beatsPerBar) % barsPerSection
-          : 0;
+      final currentBarNum = _nextBeatIndex ~/ beatsPerBar;
+
+      if (beatInBar == 0 && sectionEnabled) {
+        _sectionBarCounter++;
+      }
+
+      final barIndex = sectionEnabled && barsPerSection > 0
+          ? _sectionBarCounter % barsPerSection
+          : barsPerSection > 0
+              ? currentBarNum % barsPerSection
+              : 0;
 
       final isSectionStart =
-          barsPerSection > 0 && beatInBar == 0 && barIndex == 0;
+          sectionEnabled && barsPerSection > 0 && beatInBar == 0 && barIndex == 0;
 
       if (isSectionStart) {
         await audioService.scheduleSound(
