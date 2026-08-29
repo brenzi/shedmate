@@ -139,15 +139,22 @@ class _BeatPatternEditorState extends ConsumerState<BeatPatternEditor>
                   ],
                 ),
                ),
-               if (sectionEnabled && barsPerSection > 0) ...[
-                 const SizedBox(height: 12),
-                 Text(
-                   'Bar ${currentBar + 1} / $barsPerSection',
-                   style: Theme.of(context).textTheme.bodyMedium,
-                 ),
-               ] else ...[
-                 const SizedBox(height: 30),
-               ],
+                if (sectionEnabled && barsPerSection > 0) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    'Bar ${currentBar + 1} / $barsPerSection',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ] else ...[
+                  const SizedBox(height: 12),
+                  Opacity(
+                    opacity: 0,
+                    child: Text(
+                      'Bar ${currentBar + 1} / $barsPerSection',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+                ],
              ],
           );
         },

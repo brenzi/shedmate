@@ -93,15 +93,35 @@ void main() {
 
   testWidgets('section increment and decrement', (tester) async {
     await tester.pumpWidget(_buildTestApp());
-    // Initially no bar counter
-    expect(find.textContaining('Bar'), findsNothing);
+    // Initially no visible bar counter (opacity: 0 makes it invisible)
+    final barTextFinder = find.byWidgetPredicate((widget) =>
+        widget is Text && widget.data != null && widget.data!.startsWith('Bar'));
+    expect(barTextFinder, findsOneWidget);
+    
+    // Verify the Opacity widget has opacity 0 when section disabled
+    final opacityFinder = find.ancestor(
+      of: barTextFinder,
+      matching: find.byType(Opacity),
+    );
+    expect(opacityFinder, findsOneWidget);
+    final opacityValue = (opacityFinder.evaluate().first.widget as Opacity).opacity;
+    expect(opacityValue, equals(0.0), 
+        reason: 'Bar counter should be invisible (opacity 0) when section disabled');
+    
     // Increment to 1
     await tester.tap(find.byIcon(Icons.add));
     await tester.pump();
     expect(find.text('Bar 1 / 1'), findsOneWidget);
+    
     // Decrement back to 0
     await tester.tap(find.byIcon(Icons.remove));
     await tester.pump();
-    expect(find.textContaining('Bar'), findsNothing);
+    expect(barTextFinder, findsOneWidget);
+    final disabledOpacity = (find.ancestor(
+      of: barTextFinder,
+      matching: find.byType(Opacity),
+    ).evaluate().first.widget as Opacity).opacity;
+    expect(disabledOpacity, equals(0.0), 
+        reason: 'Bar counter should be invisible (opacity 0) when section disabled');
   });
 }
